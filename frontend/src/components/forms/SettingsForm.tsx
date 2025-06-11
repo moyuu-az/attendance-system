@@ -38,8 +38,7 @@ type HourlyRateFormValues = z.infer<typeof hourlyRateSchema>
 export function SettingsForm() {
   const { toast } = useToast()
   const { currentUser: user, isLoading, error, fetchCurrentUser, updateUser, updateHourlyRate } = useUserStore()
-  const [isUpdatingUser, setIsUpdatingUser] = useState(false)
-  const [isUpdatingRate, setIsUpdatingRate] = useState(false)
+  // 更新中の状態を管理するためのstateは不要（ストアのisLoadingを使用）
 
   // ユーザー情報取得
   useEffect(() => {
@@ -67,15 +66,35 @@ export function SettingsForm() {
   })
 
   const onSubmitUser = async (data: UserFormValues) => {
-    setIsUpdatingUser(true)
-    await updateUser(data)
-    setIsUpdatingUser(false)
+    try {
+      await updateUser(data)
+      toast({
+        title: "更新完了",
+        description: "ユーザー情報を更新しました"
+      })
+    } catch (error) {
+      toast({
+        title: "エラー",
+        description: "更新に失敗しました",
+        variant: "destructive"
+      })
+    }
   }
 
   const onSubmitHourlyRate = async (data: HourlyRateFormValues) => {
-    setIsUpdatingRate(true)
-    await updateHourlyRate(Number(data.hourly_rate))
-    setIsUpdatingRate(false)
+    try {
+      await updateHourlyRate(Number(data.hourly_rate))
+      toast({
+        title: "更新完了",
+        description: "時給を更新しました"
+      })
+    } catch (error) {
+      toast({
+        title: "エラー",
+        description: "更新に失敗しました",
+        variant: "destructive"
+      })
+    }
   }
 
   if (isLoading) {
@@ -113,8 +132,7 @@ export function SettingsForm() {
                     <FormControl>
                       <Input 
                         placeholder="山田 太郎" 
-                        {...field} 
-                        disabled={!isUpdatingUser}
+                        {...field}
                       />
                     </FormControl>
                     <FormMessage />
@@ -131,45 +149,19 @@ export function SettingsForm() {
                       <Input 
                         type="email" 
                         placeholder="taro@example.com" 
-                        {...field} 
-                        disabled={!isUpdatingUser}
+                        {...field}
                       />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-              <div className="flex gap-2">
-                {!isUpdatingUser ? (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setIsUpdatingUser(true)}
-                  >
-                    編集する
-                  </Button>
-                ) : (
-                  <>
-                    <Button 
-                      type="submit"
-                      disabled={isLoading}
-                    >
-                      {isLoading ? '更新中...' : '保存'}
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => {
-                        setIsUpdatingUser(false)
-                        userForm.reset()
-                      }}
-                      disabled={isLoading}
-                    >
-                      キャンセル
-                    </Button>
-                  </>
-                )}
-              </div>
+              <Button 
+                type="submit"
+                disabled={isLoading}
+              >
+                {isLoading ? '更新中...' : '保存'}
+              </Button>
             </form>
           </Form>
         </CardContent>
@@ -196,8 +188,7 @@ export function SettingsForm() {
                       <Input 
                         type="number" 
                         placeholder="1000" 
-                        {...field} 
-                        disabled={!isUpdatingRate}
+                        {...field}
                       />
                     </FormControl>
                     <FormDescription>
@@ -207,37 +198,12 @@ export function SettingsForm() {
                   </FormItem>
                 )}
               />
-              <div className="flex gap-2">
-                {!isUpdatingRate ? (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setIsUpdatingRate(true)}
-                  >
-                    編集する
-                  </Button>
-                ) : (
-                  <>
-                    <Button 
-                      type="submit"
-                      disabled={isLoading}
-                    >
-                      {isLoading ? '更新中...' : '保存'}
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => {
-                        setIsUpdatingRate(false)
-                        hourlyRateForm.reset()
-                      }}
-                      disabled={isLoading}
-                    >
-                      キャンセル
-                    </Button>
-                  </>
-                )}
-              </div>
+              <Button 
+                type="submit"
+                disabled={isLoading}
+              >
+                {isLoading ? '更新中...' : '保存'}
+              </Button>
             </form>
           </Form>
         </CardContent>
