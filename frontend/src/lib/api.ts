@@ -20,8 +20,15 @@ const api = axios.create({
 // ユーザーAPI
 export const userApi = {
   getMe: async (): Promise<User> => {
-    const { data } = await api.get('/api/users/me')
-    return data
+    try {
+      console.log('userApi.getMe - making request to:', `${API_BASE_URL}/api/users/me`)
+      const { data } = await api.get('/api/users/me')
+      console.log('userApi.getMe - response:', data)
+      return data
+    } catch (error) {
+      console.error('userApi.getMe - error:', error)
+      throw error
+    }
   },
   
   updateMe: async (userData: Partial<User>): Promise<User> => {

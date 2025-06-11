@@ -20,15 +20,19 @@ export const useUserStore = create<UserState>((set) => ({
   error: null,
   
   fetchCurrentUser: async () => {
+    console.log('userStore.fetchCurrentUser - starting...')
     set({ isLoading: true, error: null })
     try {
+      console.log('userStore.fetchCurrentUser - calling userApi.getMe()')
       const user = await userApi.getMe()
+      console.log('userStore.fetchCurrentUser - got user:', user)
       set({ currentUser: user })
     } catch (error) {
+      console.error('userStore.fetchCurrentUser - error:', error)
       set({ error: 'ユーザー情報の取得に失敗しました' })
-      console.error('Failed to fetch current user:', error)
     } finally {
       set({ isLoading: false })
+      console.log('userStore.fetchCurrentUser - completed')
     }
   },
   

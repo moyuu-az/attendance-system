@@ -1,41 +1,37 @@
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-from typing import AsyncGenerator
+from typing import Generator
 import logging
 
 from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
-# 非同期エンジンの作成
-engine = create_async_engine(
-    settings.DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://"),
+# 同期エンジンの作成
+engine = create_engine(
+    settings.DATABASE_URL,
     echo=settings.DEBUG,
-    future=True
+    pool_pre_ping=True
 )
 
-# 非同期セッションファクトリーの作成
-AsyncSessionLocal = sessionmaker(
-    engine,
-    class_=AsyncSession,
-    expire_on_commit=False
+# 同期セッションファクトリーの作成
+SessionLocal = sessionmaker(
+    autocommit=False,
+    autoflush=False,
+    bind=engine
 )
 
 # ベースクラスの定義
 Base = declarative_base()
 
 
-async def get_db() -> AsyncGenerator[AsyncSession, None]:
+def get_db() -> Generator:
     """
     データベースセッションの依存性注入用関数
     """
-    async with AsyncSessionLocal() as session:
-        try:
-            yield session
-            await session.commit()
-        except Exception:
-            await session.rollback()
-            raise
-        finally:
-            await session.close()
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()

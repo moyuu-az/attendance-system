@@ -1,6 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy.orm import Session
 from typing import List
 import logging
 
@@ -13,15 +12,14 @@ logger = logging.getLogger(__name__)
 
 
 @router.get("/me", response_model=UserResponse)
-async def get_current_user(
-    user_id: int = 1,  # 簡易実装のため固定値
-    db: AsyncSession = Depends(get_db)
+def get_current_user(
+    user_id: int = 4,  # Admin固定ログイン
+    db: Session = Depends(get_db)
 ):
     """
     現在のユーザー情報を取得
     """
-    result = await db.execute(select(User).where(User.id == user_id))
-    user = result.scalar_one_or_none()
+    user = db.query(User).filter(User.id == user_id).first()
     
     if not user:
         raise HTTPException(
@@ -33,16 +31,15 @@ async def get_current_user(
 
 
 @router.put("/me", response_model=UserResponse)
-async def update_current_user(
+def update_current_user(
     user_update: UserUpdate,
-    user_id: int = 1,  # 簡易実装のため固定値
-    db: AsyncSession = Depends(get_db)
+    user_id: int = 4,  # Admin固定ログイン
+    db: Session = Depends(get_db)
 ):
     """
     現在のユーザー情報を更新
     """
-    result = await db.execute(select(User).where(User.id == user_id))
-    user = result.scalar_one_or_none()
+    user = db.query(User).filter(User.id == user_id).first()
     
     if not user:
         raise HTTPException(
@@ -55,18 +52,18 @@ async def update_current_user(
     for field, value in update_data.items():
         setattr(user, field, value)
     
-    await db.commit()
-    await db.refresh(user)
+    db.commit()
+    db.refresh(user)
     
     logger.info(f"User {user_id} updated successfully")
     return user
 
 
 @router.put("/me/hourly-rate", response_model=UserResponse)
-async def update_hourly_rate(
+def update_hourly_rate(
     hourly_rate: float,
-    user_id: int = 1,  # 簡易実装のため固定値
-    db: AsyncSession = Depends(get_db)
+    user_id: int = 4,  # Admin固定ログイン
+    db: Session = Depends(get_db)
 ):
     """
     時給を更新
@@ -77,8 +74,7 @@ async def update_hourly_rate(
             detail="Hourly rate must be positive"
         )
     
-    result = await db.execute(select(User).where(User.id == user_id))
-    user = result.scalar_one_or_none()
+    user = db.query(User).filter(User.id == user_id).first()
     
     if not user:
         raise HTTPException(
@@ -87,42 +83,37 @@ async def update_hourly_rate(
         )
     
     user.hourly_rate = hourly_rate
-    await db.commit()
-    await db.refresh(user)
+    db.commit()
+    db.refresh(user)
     
     logger.info(f"User {user_id} hourly rate updated to {hourly_rate}")
     return user
 
 
 @router.get("/", response_model=List[UserResponse])
-async def get_all_users(
+def get_all_users(
     skip: int = 0,
     limit: int = 100,
-    db: AsyncSession = Depends(get_db)
+    db: Session = Depends(get_db)
 ):
     """
     全ユーザー一覧を取得
     """
-    result = await db.execute(
-        select(User).offset(skip).limit(limit)
-    )
-    users = result.scalars().all()
+    users = db.query(User).offset(skip).limit(limit).all()
     return users
 
 
 @router.post("/", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
-async def create_user(
+def create_user(
     user_create: UserCreate,
-    db: AsyncSession = Depends(get_db)
+    db: Session = Depends(get_db)
 ):
     """
     新規ユーザーを作成
     """
     # メールアドレスの重複チェック
-    result = await db.execute(
-        select(User).where(User.email == user_create.email)
-    )
-    if result.scalar_one_or_none():
+    existing_user = db.query(User).filter(User.email == user_create.email).first()
+    if existing_user:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Email already registered"
@@ -131,8 +122,8 @@ async def create_user(
     # ユーザー作成
     user = User(**user_create.model_dump())
     db.add(user)
-    await db.commit()
-    await db.refresh(user)
+    db.commit()
+    db.refresh(user)
     
     logger.info(f"New user created: {user.email}")
     return user

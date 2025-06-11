@@ -10,7 +10,7 @@ class UserBase(BaseModel):
     """
     name: str = Field(..., min_length=1, max_length=100)
     email: EmailStr
-    hourly_rate: Decimal = Field(default=Decimal("1000.00"), ge=0, decimal_places=2)
+    hourly_rate: Decimal = Field(default=Decimal("1000.00"), ge=0)
 
 
 class UserCreate(UserBase):
@@ -26,7 +26,7 @@ class UserUpdate(BaseModel):
     """
     name: Optional[str] = Field(None, min_length=1, max_length=100)
     email: Optional[EmailStr] = None
-    hourly_rate: Optional[Decimal] = Field(None, ge=0, decimal_places=2)
+    hourly_rate: Optional[Decimal] = Field(None, ge=0)
 
 
 class UserResponse(UserBase):

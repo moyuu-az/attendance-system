@@ -1,6 +1,5 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from contextlib import asynccontextmanager
 import logging
 
 from app.core.config import settings
@@ -15,31 +14,31 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    """
-    アプリケーションのライフサイクル管理
-    """
-    # 起動時の処理
-    logger.info("Starting up application...")
-    # データベーステーブルの作成
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
-    
-    yield
-    
-    # 終了時の処理
-    logger.info("Shutting down application...")
-    await engine.dispose()
-
-
 # FastAPIアプリケーションの初期化
 app = FastAPI(
     title="勤怠管理システム API",
     description="時給ベースの勤怠管理システム",
-    version="1.0.0",
-    lifespan=lifespan
+    version="1.0.0"
 )
+
+
+@app.on_event("startup")
+def startup_event():
+    """
+    アプリケーション起動時の処理
+    """
+    logger.info("Starting up application...")
+    # データベーステーブルの作成
+    Base.metadata.create_all(bind=engine)
+
+
+@app.on_event("shutdown")
+def shutdown_event():
+    """
+    アプリケーション終了時の処理
+    """
+    logger.info("Shutting down application...")
+    engine.dispose()
 
 # CORS設定
 app.add_middleware(
