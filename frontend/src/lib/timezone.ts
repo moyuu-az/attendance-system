@@ -64,11 +64,26 @@ export function jstToUTC(date: Date): Date {
  * 
  * @param date - Date object or ISO string to format
  * @param formatStr - Format string for date formatting
- * @returns Formatted date string in JST with Japanese locale
+ * @returns Formatted date string in JST with Japanese locale, or empty string if date is invalid
  */
 export function formatJST(date: Date | string, formatStr: string = 'yyyy年MM月dd日(E) HH:mm'): string {
-  const dateObj = typeof date === 'string' ? parseISO(date) : date;
-  return formatInTimeZone(dateObj, JST_TIMEZONE, formatStr, { locale: ja });
+  if (!date) {
+    return '';
+  }
+  
+  try {
+    const dateObj = typeof date === 'string' ? parseISO(date) : date;
+    
+    // Check if the date is valid
+    if (!dateObj || isNaN(dateObj.getTime())) {
+      return '';
+    }
+    
+    return formatInTimeZone(dateObj, JST_TIMEZONE, formatStr, { locale: ja });
+  } catch (error) {
+    console.error('formatJST: Invalid date provided', { date, formatStr, error });
+    return '';
+  }
 }
 
 /**

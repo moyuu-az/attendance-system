@@ -282,10 +282,10 @@ export function MonthlySummary({ userId = 1 }: MonthlySummaryProps) {
                               </div>
                             </td>
                             <td className="py-3 px-4">
-                              {attendance.clock_in ? formatTimeJST(attendance.clock_in) : '-'}
+                              {attendance.clock_in ? (formatTimeJST(attendance.clock_in) || '-') : '-'}
                             </td>
                             <td className="py-3 px-4">
-                              {attendance.clock_out ? formatTimeJST(attendance.clock_out) : '-'}
+                              {attendance.clock_out ? (formatTimeJST(attendance.clock_out) || '-') : '-'}
                             </td>
                             <td className="py-3 px-4 font-medium">
                               {attendance.total_hours}時間
