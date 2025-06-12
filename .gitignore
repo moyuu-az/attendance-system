@@ -91,3 +91,5 @@ logs/
 # Temporary files
 tmp/
 temp/
+
+CLAUDE.md
