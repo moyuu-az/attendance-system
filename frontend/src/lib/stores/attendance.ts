@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { attendanceApi, breakApi } from '@/lib/api'
-import type { AttendanceWithBreaks, BreakTime } from '@/types'
+import type { AttendanceWithBreaks } from '@/types'
 import { toast } from '@/hooks/use-toast'
 
 interface AttendanceState {

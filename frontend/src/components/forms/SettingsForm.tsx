@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from 'react'
+import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
@@ -72,7 +72,7 @@ export function SettingsForm() {
         title: "更新完了",
         description: "ユーザー情報を更新しました"
       })
-    } catch (error) {
+    } catch {
       toast({
         title: "エラー",
         description: "更新に失敗しました",
@@ -88,7 +88,7 @@ export function SettingsForm() {
         title: "更新完了",
         description: "時給を更新しました"
       })
-    } catch (error) {
+    } catch {
       toast({
         title: "エラー",
         description: "更新に失敗しました",

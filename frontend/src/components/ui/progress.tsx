@@ -15,7 +15,9 @@ const Progress = React.forwardRef<
     value?: number
     max?: number
   }
->(({ className, value, max = 100, ...props }, ref) => (
+>(({ className, value, max = 100, ...props }, ref) => {
+  void max; // max is available for future use
+  return (
   <div
     ref={ref}
     className={cn(
@@ -29,7 +31,8 @@ const Progress = React.forwardRef<
       style={{ transform: `translateX(-${100 - (value || 0)}%)` }}
     />
   </div>
-))
+  );
+})
 Progress.displayName = "Progress"
 
 export { Progress }

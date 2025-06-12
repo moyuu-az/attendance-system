@@ -22,6 +22,10 @@ const actionTypes = {
   REMOVE_TOAST: "REMOVE_TOAST",
 } as const
 
+// Export ActionType and actionTypes for external usage
+export type ActionType = typeof actionTypes[keyof typeof actionTypes]
+export { actionTypes }
+
 let count = 0
 
 function genId() {

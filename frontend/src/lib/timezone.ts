@@ -5,7 +5,7 @@
  * current JST time to ensure consistent time handling across the frontend application.
  */
 
-import { format, formatDistanceToNow, parseISO } from 'date-fns';
+import { formatDistanceToNow, parseISO } from 'date-fns';
 import { fromZonedTime, toZonedTime, formatInTimeZone } from 'date-fns-tz';
 import { ja } from 'date-fns/locale';
 
@@ -120,7 +120,6 @@ export function formatDateTimeJST(date: Date | string): string {
 export function formatRelativeTimeJST(date: Date | string): string {
   const dateObj = typeof date === 'string' ? parseISO(date) : date;
   const jstDate = toJST(dateObj);
-  const jstNow = nowJST();
   
   return formatDistanceToNow(jstDate, { 
     addSuffix: true, 

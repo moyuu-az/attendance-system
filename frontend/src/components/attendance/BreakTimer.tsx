@@ -12,6 +12,8 @@ interface BreakTimerProps {
 }
 
 export function BreakTimer({ attendanceId }: BreakTimerProps) {
+  // TODO: Use attendanceId for more specific break handling
+  void attendanceId;
   const { todayAttendance, startBreak, endBreak } = useAttendanceStore()
   const [elapsedTime, setElapsedTime] = useState(0)
   

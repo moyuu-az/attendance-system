@@ -43,10 +43,10 @@ export function useAttendance({ year, month }: UseAttendanceParams) {
         description: '勤怠情報を更新しました',
       });
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       toast({
         title: 'エラー',
-        description: error.response?.data?.detail || '更新に失敗しました',
+        description: (error as { response?: { data?: { detail?: string } } })?.response?.data?.detail || '更新に失敗しました',
         variant: 'destructive',
       });
     },
@@ -64,10 +64,10 @@ export function useAttendance({ year, month }: UseAttendanceParams) {
         description: '勤怠情報を削除しました',
       });
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       toast({
         title: 'エラー',
-        description: error.response?.data?.detail || '削除に失敗しました',
+        description: (error as { response?: { data?: { detail?: string } } })?.response?.data?.detail || '削除に失敗しました',
         variant: 'destructive',
       });
     },
@@ -90,10 +90,10 @@ export function useAttendance({ year, month }: UseAttendanceParams) {
         description: '勤怠情報を作成しました',
       });
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       toast({
         title: 'エラー',
-        description: error.response?.data?.detail || '作成に失敗しました',
+        description: (error as { response?: { data?: { detail?: string } } })?.response?.data?.detail || '作成に失敗しました',
         variant: 'destructive',
       });
     },

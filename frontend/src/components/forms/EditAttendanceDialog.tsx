@@ -41,11 +41,6 @@ export function EditAttendanceDialog({
   });
   const [breakTimes, setBreakTimes] = useState<BreakTimeEdit[]>([]);
 
-  // attendanceがnullの場合はダイアログを表示しない
-  if (!attendance) {
-    return null;
-  }
-
   useEffect(() => {
     // 勤怠データが変更されたら、フォームデータをリセット
     if (attendance) {
@@ -145,7 +140,7 @@ export function EditAttendanceDialog({
       });
       
       onOpenChange(false);
-    } catch (error) {
+    } catch {
       toast({
         title: 'エラー',
         description: '更新に失敗しました',
@@ -167,7 +162,7 @@ export function EditAttendanceDialog({
         description: '勤怠情報を削除しました',
       });
       onOpenChange(false);
-    } catch (error) {
+    } catch {
       toast({
         title: 'エラー',
         description: '削除に失敗しました',
@@ -177,6 +172,11 @@ export function EditAttendanceDialog({
       setIsSubmitting(false);
     }
   };
+
+  // attendanceがnullの場合はダイアログを表示しない
+  if (!attendance) {
+    return null;
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

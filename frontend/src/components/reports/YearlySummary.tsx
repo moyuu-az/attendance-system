@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
 import { CalendarIcon, ClockIcon, DollarSignIcon, TrendingUpIcon, BarChart3Icon } from 'lucide-react'
 import { reportApi } from '@/lib/api'
-import type { YearlyReport } from '@/types'
+// import type { YearlyReport } from '@/types'
 
 /**
  * 年次レポート要約コンポーネント
