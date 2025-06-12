@@ -18,7 +18,7 @@ help:
 
 # 全サービス起動
 start:
-	docker-compose up -d
+	docker-compose up -d --build
 	@echo "✅ 全サービスが起動しました"
 	@echo "  - Frontend: http://localhost:3000"
 	@echo "  - Backend:  http://localhost:8000"
