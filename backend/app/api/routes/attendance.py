@@ -120,7 +120,12 @@ async def get_today_attendance(
     attendance = result.scalar_one_or_none()
     
     if not attendance:
+        logger.info(f"No attendance record found for user {user_id} on {today}")
         return None
+    
+    break_count = len(attendance.break_times) if attendance.break_times else 0
+    logger.info(f"Today attendance retrieved for user {user_id}: attendance_id={attendance.id}, break_times_count={break_count}")
+    logger.debug(f"Break times: {[{'id': b.id, 'start_time': b.start_time, 'end_time': b.end_time, 'duration': b.duration} for b in attendance.break_times] if attendance.break_times else []}")
     
     return attendance
 

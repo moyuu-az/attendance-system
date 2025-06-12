@@ -32,7 +32,8 @@ async def start_break(
             attendance_id=request.attendance_id,
             start_time=request.time
         )
-        logger.info(f"Break started successfully for attendance {request.attendance_id}")
+        logger.info(f"Break started successfully for attendance {request.attendance_id}: {break_time.id}")
+        logger.debug(f"Break start response: id={break_time.id}, start_time={break_time.start_time}, attendance_id={break_time.attendance_id}")
         return break_time
     except BreakServiceError as e:
         logger.warning(f"Break start validation error: {e.message} (code: {e.error_code})")
@@ -71,7 +72,8 @@ async def end_break(
             break_id=request.break_id,
             end_time=request.time
         )
-        logger.info(f"Break {request.break_id} ended successfully")
+        logger.info(f"Break {request.break_id} ended successfully: duration={break_time.duration} minutes")
+        logger.debug(f"Break end response: id={break_time.id}, end_time={break_time.end_time}, duration={break_time.duration}, attendance_id={break_time.attendance_id}")
         return break_time
     except BreakServiceError as e:
         logger.warning(f"Break end validation error: {e.message} (code: {e.error_code})")

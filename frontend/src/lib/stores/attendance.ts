@@ -41,6 +41,10 @@ export const useAttendanceStore = create<AttendanceState>((set, get) => ({
     set({ isLoading: true, error: null })
     try {
       const attendance = await attendanceApi.getToday(1) // TODO: 実際のユーザーIDを使用
+      console.log('fetchTodayAttendance - response:', attendance)
+      if (attendance?.break_times) {
+        console.log('fetchTodayAttendance - break_times:', attendance.break_times)
+      }
       set({ todayAttendance: attendance })
     } catch (error) {
       set({ error: '今日の勤怠情報の取得に失敗しました' })
@@ -145,6 +149,7 @@ export const useAttendanceStore = create<AttendanceState>((set, get) => ({
     set({ isBreakLoading: true, breakError: null })
     try {
       const breakTime = await breakApi.start(todayAttendance.id)
+      console.log('startBreak - response:', breakTime)
       await get().fetchTodayAttendance()
       toast({
         title: '休憩を開始しました',
@@ -196,6 +201,7 @@ export const useAttendanceStore = create<AttendanceState>((set, get) => ({
     set({ isBreakLoading: true, breakError: null })
     try {
       const breakTime = await breakApi.end(breakId)
+      console.log('endBreak - response:', breakTime)
       await get().fetchTodayAttendance()
       toast({
         title: '休憩を終了しました',

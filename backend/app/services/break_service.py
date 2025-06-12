@@ -151,6 +151,15 @@ class BreakService:
             await self.db.commit()
             await self.db.refresh(break_time)
             
+            # 勤怠の合計時間も更新
+            from app.services.attendance_service import AttendanceService
+            attendance_service = AttendanceService(self.db)
+            attendance = await self.db.get(Attendance, break_time.attendance_id)
+            if attendance:
+                await attendance_service.calculate_totals(attendance)
+                await self.db.commit()
+                logger.info(f"Attendance totals recalculated for attendance {break_time.attendance_id}")
+            
             logger.info(f"Break {break_id} ended at {current_time} (duration: {break_time.duration} minutes)")
             return break_time
             
