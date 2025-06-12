@@ -84,16 +84,18 @@ export function AttendanceCalendarTable({
     <>
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <CardTitle>勤怠記録</CardTitle>
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center justify-center sm:justify-end space-x-2">
               <Button variant="outline" size="sm" onClick={handlePrevMonth}>
                 <ChevronLeft className="h-4 w-4" />
+                <span className="hidden sm:inline ml-1">前月</span>
               </Button>
-              <span className="text-lg font-medium px-4">
+              <span className="text-lg font-medium px-2 sm:px-4">
                 {format(new Date(selectedMonth.year, selectedMonth.month - 1), 'yyyy年M月', { locale: ja })}
               </span>
               <Button variant="outline" size="sm" onClick={handleNextMonth}>
+                <span className="hidden sm:inline mr-1">次月</span>
                 <ChevronRight className="h-4 w-4" />
               </Button>
             </div>
@@ -108,15 +110,15 @@ export function AttendanceCalendarTable({
               <table className="w-full border-collapse">
                 <thead>
                   <tr className="border-b">
-                    <th className="text-left p-3 font-medium">日付</th>
-                    <th className="text-left p-3 font-medium">曜日</th>
-                    <th className="text-left p-3 font-medium">ステータス</th>
-                    <th className="text-left p-3 font-medium">出勤時刻</th>
-                    <th className="text-left p-3 font-medium">退勤時刻</th>
-                    <th className="text-left p-3 font-medium">労働時間</th>
-                    <th className="text-left p-3 font-medium">休憩時間</th>
-                    <th className="text-left p-3 font-medium">給与</th>
-                    <th className="text-left p-3 font-medium">操作</th>
+                    <th className="text-left p-2 sm:p-3 font-medium">日付</th>
+                    <th className="text-left p-2 sm:p-3 font-medium hidden sm:table-cell">曜日</th>
+                    <th className="text-left p-2 sm:p-3 font-medium">ステータス</th>
+                    <th className="text-left p-2 sm:p-3 font-medium hidden md:table-cell">出勤時刻</th>
+                    <th className="text-left p-2 sm:p-3 font-medium hidden md:table-cell">退勤時刻</th>
+                    <th className="text-left p-2 sm:p-3 font-medium">労働時間</th>
+                    <th className="text-left p-2 sm:p-3 font-medium hidden lg:table-cell">休憩時間</th>
+                    <th className="text-left p-2 sm:p-3 font-medium hidden sm:table-cell">給与</th>
+                    <th className="text-left p-2 sm:p-3 font-medium">操作</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -133,40 +135,53 @@ export function AttendanceCalendarTable({
                           day.is_weekend ? 'bg-blue-50' : ''
                         }`}
                       >
-                        <td className="p-3">
+                        <td className="p-2 sm:p-3">
                           <div className="font-medium">
                             {format(new Date(day.date), 'd日', { locale: ja })}
                           </div>
-                          <div className="text-xs text-muted-foreground">
+                          <div className="text-xs text-muted-foreground sm:hidden">
+                            {format(new Date(day.date), 'E', { locale: ja })}
+                          </div>
+                          <div className="text-xs text-muted-foreground hidden sm:block">
                             {format(new Date(day.date), 'M/d', { locale: ja })}
                           </div>
                         </td>
-                        <td className="p-3">
+                        <td className="p-2 sm:p-3 hidden sm:table-cell">
                           <span className={day.is_weekend ? 'text-blue-600 font-medium' : ''}>
                             {format(new Date(day.date), 'E', { locale: ja })}
                           </span>
                         </td>
-                        <td className="p-3">
+                        <td className="p-2 sm:p-3">
                           {getStatusBadge(day)}
+                          <div className="text-xs text-muted-foreground mt-1 md:hidden">
+                            {day.attendance && (
+                              <div className="space-y-0.5">
+                                <div>{formatTime(day.attendance?.clock_in || null)} - {formatTime(day.attendance?.clock_out || null)}</div>
+                              </div>
+                            )}
+                          </div>
                         </td>
-                        <td className="p-3 font-mono">
+                        <td className="p-2 sm:p-3 font-mono hidden md:table-cell">
                           {formatTime(day.attendance?.clock_in || null)}
                         </td>
-                        <td className="p-3 font-mono">
+                        <td className="p-2 sm:p-3 font-mono hidden md:table-cell">
                           {formatTime(day.attendance?.clock_out || null)}
                         </td>
-                        <td className="p-3 font-mono">
+                        <td className="p-2 sm:p-3 font-mono">
                           {day.attendance?.total_hours ? 
                             `${day.attendance.total_hours}h` : '--:--'}
+                          <div className="text-xs text-muted-foreground sm:hidden lg:hidden">
+                            {breakDuration > 0 ? `休憩${breakDuration}分` : ''}
+                          </div>
                         </td>
-                        <td className="p-3 font-mono">
+                        <td className="p-2 sm:p-3 font-mono hidden lg:table-cell">
                           {breakDuration > 0 ? `${breakDuration}分` : '--'}
                         </td>
-                        <td className="p-3">
+                        <td className="p-2 sm:p-3 hidden sm:table-cell">
                           {day.attendance?.total_amount ? 
                             `¥${day.attendance.total_amount.toLocaleString()}` : '¥0'}
                         </td>
-                        <td className="p-3">
+                        <td className="p-2 sm:p-3">
                           {day.attendance ? (
                             <Button
                               variant="ghost"

@@ -7,7 +7,9 @@ interface AttendanceState {
   todayAttendance: AttendanceWithBreaks | null
   attendances: AttendanceWithBreaks[]
   isLoading: boolean
+  isBreakLoading: boolean
   error: string | null
+  breakError: string | null
   
   // Actions
   fetchTodayAttendance: () => Promise<void>
@@ -21,13 +23,19 @@ interface AttendanceState {
   endBreak: (breakId: number) => Promise<void>
   updateAttendance: (id: number, data: Partial<AttendanceWithBreaks>) => Promise<void>
   deleteAttendance: (id: number) => Promise<void>
+  
+  // Error clearing
+  clearError: () => void
+  clearBreakError: () => void
 }
 
 export const useAttendanceStore = create<AttendanceState>((set, get) => ({
   todayAttendance: null,
   attendances: [],
   isLoading: false,
+  isBreakLoading: false,
   error: null,
+  breakError: null,
   
   fetchTodayAttendance: async () => {
     set({ isLoading: true, error: null })
@@ -103,10 +111,38 @@ export const useAttendanceStore = create<AttendanceState>((set, get) => ({
   },
   
   startBreak: async () => {
-    const { todayAttendance } = get()
-    if (!todayAttendance) return
+    const { todayAttendance, isBreakLoading } = get()
     
-    set({ isLoading: true, error: null })
+    if (!todayAttendance) {
+      const errorMsg = '勤怠記録が見つかりません。先に出勤してください。'
+      set({ breakError: errorMsg })
+      toast({
+        title: 'エラー',
+        description: errorMsg,
+        variant: 'destructive',
+      })
+      return
+    }
+    
+    if (isBreakLoading) {
+      console.log('Break operation already in progress')
+      return
+    }
+    
+    // 既に休憩中かチェック
+    const activeBreak = todayAttendance.break_times?.find(b => !b.end_time)
+    if (activeBreak) {
+      const errorMsg = '既に休憩中です。'
+      set({ breakError: errorMsg })
+      toast({
+        title: 'エラー',
+        description: errorMsg,
+        variant: 'destructive',
+      })
+      return
+    }
+    
+    set({ isBreakLoading: true, breakError: null })
     try {
       const breakTime = await breakApi.start(todayAttendance.id)
       await get().fetchTodayAttendance()
@@ -114,38 +150,78 @@ export const useAttendanceStore = create<AttendanceState>((set, get) => ({
         title: '休憩を開始しました',
         description: `開始時刻: ${breakTime.start_time}`,
       })
-    } catch (error) {
-      set({ error: '休憩開始処理に失敗しました' })
+    } catch (error: any) {
+      const errorData = error?.response?.data?.detail
+      let errorMsg = '休憩開始処理に失敗しました'
+      
+      if (errorData) {
+        if (typeof errorData === 'string') {
+          errorMsg = errorData
+        } else if (errorData.message) {
+          errorMsg = errorData.message
+        }
+      }
+      
+      set({ breakError: errorMsg })
       toast({
         title: 'エラー',
-        description: '休憩開始処理に失敗しました',
+        description: errorMsg,
         variant: 'destructive',
       })
       console.error('Failed to start break:', error)
     } finally {
-      set({ isLoading: false })
+      set({ isBreakLoading: false })
     }
   },
   
   endBreak: async (breakId: number) => {
-    set({ isLoading: true, error: null })
+    const { isBreakLoading } = get()
+    
+    if (isBreakLoading) {
+      console.log('Break operation already in progress')
+      return
+    }
+    
+    if (!breakId || breakId <= 0) {
+      const errorMsg = '無効な休憩IDです。'
+      set({ breakError: errorMsg })
+      toast({
+        title: 'エラー',
+        description: errorMsg,
+        variant: 'destructive',
+      })
+      return
+    }
+    
+    set({ isBreakLoading: true, breakError: null })
     try {
       const breakTime = await breakApi.end(breakId)
       await get().fetchTodayAttendance()
       toast({
         title: '休憩を終了しました',
-        description: `終了時刻: ${breakTime.end_time}`,
+        description: `終了時刻: ${breakTime.end_time} (休憩時間: ${breakTime.duration}分)`,
       })
-    } catch (error) {
-      set({ error: '休憩終了処理に失敗しました' })
+    } catch (error: any) {
+      const errorData = error?.response?.data?.detail
+      let errorMsg = '休憩終了処理に失敗しました'
+      
+      if (errorData) {
+        if (typeof errorData === 'string') {
+          errorMsg = errorData
+        } else if (errorData.message) {
+          errorMsg = errorData.message
+        }
+      }
+      
+      set({ breakError: errorMsg })
       toast({
         title: 'エラー',
-        description: '休憩終了処理に失敗しました',
+        description: errorMsg,
         variant: 'destructive',
       })
       console.error('Failed to end break:', error)
     } finally {
-      set({ isLoading: false })
+      set({ isBreakLoading: false })
     }
   },
   
@@ -189,5 +265,14 @@ export const useAttendanceStore = create<AttendanceState>((set, get) => ({
     } finally {
       set({ isLoading: false })
     }
+  },
+  
+  // Error clearing functions
+  clearError: () => {
+    set({ error: null })
+  },
+  
+  clearBreakError: () => {
+    set({ breakError: null })
   },
 }))

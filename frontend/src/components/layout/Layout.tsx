@@ -14,7 +14,7 @@ export function Layout({ children }: LayoutProps) {
       <Header />
       <div className="flex">
         <Sidebar />
-        <main className="flex-1 p-6 ml-64">
+        <main className="flex-1 p-4 sm:p-6 pt-20 md:ml-64">
           <div className="max-w-7xl mx-auto">
             {children}
           </div>

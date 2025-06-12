@@ -125,17 +125,17 @@ export function CreateAttendanceDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
-            <DialogTitle>
+            <DialogTitle className="text-base sm:text-lg">
               {format(new Date(selectedDate), 'yyyy年M月d日 (E)', { locale: ja })} の勤怠記録作成
             </DialogTitle>
           </DialogHeader>
 
           <div className="space-y-6 py-4">
             {/* 出勤・退勤時刻 */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="clock_in">出勤時刻</Label>
                 <Input
@@ -174,8 +174,8 @@ export function CreateAttendanceDialog({
               </div>
 
               {breakTimes.map((breakTime, index) => (
-                <div key={index} className="flex items-center gap-4">
-                  <div className="flex-1 grid grid-cols-2 gap-4">
+                <div key={index} className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                  <div className="flex-1 grid grid-cols-2 gap-2 sm:gap-4">
                     <Input
                       type="time"
                       placeholder="開始時刻"
@@ -189,18 +189,20 @@ export function CreateAttendanceDialog({
                       onChange={(e) => handleBreakTimeChange(index, 'end_time', e.target.value)}
                     />
                   </div>
-                  <div className="text-sm text-muted-foreground w-20">
-                    {breakTime.duration ? `${breakTime.duration}分` : '-'}
+                  <div className="flex items-center justify-between sm:justify-end gap-2">
+                    <div className="text-sm text-muted-foreground">
+                      {breakTime.duration ? `${breakTime.duration}分` : '-'}
+                    </div>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => removeBreakTime(index)}
+                      className="h-8 w-8"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
                   </div>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => removeBreakTime(index)}
-                    className="h-8 w-8"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
                 </div>
               ))}
               
@@ -216,16 +218,17 @@ export function CreateAttendanceDialog({
             </div>
           </div>
 
-          <DialogFooter className="flex justify-end gap-2">
+          <DialogFooter className="flex flex-col sm:flex-row justify-end gap-2">
             <Button
               type="button"
               variant="outline"
               onClick={() => onOpenChange(false)}
               disabled={isSubmitting}
+              className="w-full sm:w-auto"
             >
               キャンセル
             </Button>
-            <Button type="submit" disabled={isSubmitting}>
+            <Button type="submit" disabled={isSubmitting} className="w-full sm:w-auto">
               {isSubmitting ? '作成中...' : '作成'}
             </Button>
           </DialogFooter>

@@ -123,42 +123,45 @@ export function SettingsForm() {
         <CardContent>
           <Form {...userForm}>
             <form onSubmit={userForm.handleSubmit(onSubmitUser)} className="space-y-4">
-              <FormField
-                control={userForm.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>名前</FormLabel>
-                    <FormControl>
-                      <Input 
-                        placeholder="山田 太郎" 
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={userForm.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>メールアドレス</FormLabel>
-                    <FormControl>
-                      <Input 
-                        type="email" 
-                        placeholder="taro@example.com" 
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <div className="grid gap-4 sm:grid-cols-2">
+                <FormField
+                  control={userForm.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>名前</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="山田 太郎" 
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={userForm.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>メールアドレス</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="email" 
+                          placeholder="taro@example.com" 
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
               <Button 
                 type="submit"
                 disabled={isLoading}
+                className="w-full sm:w-auto"
               >
                 {isLoading ? '更新中...' : '保存'}
               </Button>
@@ -201,6 +204,7 @@ export function SettingsForm() {
               <Button 
                 type="submit"
                 disabled={isLoading}
+                className="w-full sm:w-auto"
               >
                 {isLoading ? '更新中...' : '保存'}
               </Button>

@@ -180,17 +180,17 @@ export function EditAttendanceDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
-            <DialogTitle>
+            <DialogTitle className="text-base sm:text-lg">
               {attendance ? format(new Date(attendance.date), 'yyyy年M月d日 (E)', { locale: ja }) : '勤怠'} の勤怠編集
             </DialogTitle>
           </DialogHeader>
 
           <div className="space-y-6 py-4">
             {/* 出勤・退勤時刻 */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="clock_in">出勤時刻</Label>
                 <Input
@@ -227,8 +227,8 @@ export function EditAttendanceDialog({
               </div>
 
               {breakTimes.map((breakTime, index) => (
-                <div key={index} className="flex items-center gap-4">
-                  <div className="flex-1 grid grid-cols-2 gap-4">
+                <div key={index} className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                  <div className="flex-1 grid grid-cols-2 gap-2 sm:gap-4">
                     <Input
                       type="time"
                       placeholder="開始時刻"
@@ -242,18 +242,20 @@ export function EditAttendanceDialog({
                       onChange={(e) => handleBreakTimeChange(index, 'end_time', e.target.value)}
                     />
                   </div>
-                  <div className="text-sm text-muted-foreground w-20">
-                    {breakTime.duration ? `${breakTime.duration}分` : '-'}
+                  <div className="flex items-center justify-between sm:justify-end gap-2">
+                    <div className="text-sm text-muted-foreground">
+                      {breakTime.duration ? `${breakTime.duration}分` : '-'}
+                    </div>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => removeBreakTime(index)}
+                      className="h-8 w-8"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
                   </div>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => removeBreakTime(index)}
-                    className="h-8 w-8"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
                 </div>
               ))}
               
@@ -265,7 +267,7 @@ export function EditAttendanceDialog({
             </div>
           </div>
 
-          <DialogFooter className="flex justify-between">
+          <DialogFooter className="flex flex-col sm:flex-row justify-between gap-2">
             <div>
               {onDelete && (
                 <Button
@@ -273,23 +275,24 @@ export function EditAttendanceDialog({
                   variant="destructive"
                   onClick={handleDelete}
                   disabled={isSubmitting}
-                  className="mr-auto"
+                  className="w-full sm:w-auto"
                 >
                   <Trash2 className="h-4 w-4 mr-2" />
                   削除
                 </Button>
               )}
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2">
               <Button
                 type="button"
                 variant="outline"
                 onClick={() => onOpenChange(false)}
                 disabled={isSubmitting}
+                className="w-full sm:w-auto"
               >
                 キャンセル
               </Button>
-              <Button type="submit" disabled={isSubmitting}>
+              <Button type="submit" disabled={isSubmitting} className="w-full sm:w-auto">
                 {isSubmitting ? '保存中...' : '保存'}
               </Button>
             </div>

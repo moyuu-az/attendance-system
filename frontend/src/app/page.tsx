@@ -34,7 +34,7 @@ export default function DashboardPage() {
         </div>
 
         {/* ステータスカード */}
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
           <Card className="card-shadow">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">出勤時刻</CardTitle>
@@ -83,7 +83,7 @@ export default function DashboardPage() {
           <CardContent>
             <div className="flex flex-col gap-4">
               {/* 出退勤ボタン */}
-              <div className="flex gap-4">
+              <div className="flex flex-col sm:flex-row gap-4">
                 <ClockInButton 
                   disabled={!!todayAttendance?.clock_in}
                   isLoading={isLoading}

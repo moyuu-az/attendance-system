@@ -52,7 +52,7 @@ export default function ReportsPage() {
         </div>
 
       {/* 概要カード */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">今月の概要</CardTitle>
@@ -102,17 +102,20 @@ export default function ReportsPage() {
       {/* レポートタブ */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="monthly" className="flex items-center gap-2">
+          <TabsTrigger value="monthly" className="flex items-center gap-1 sm:gap-2">
             <CalendarIcon className="h-4 w-4" />
-            月次レポート
+            <span className="hidden sm:inline">月次レポート</span>
+            <span className="sm:hidden">月次</span>
           </TabsTrigger>
-          <TabsTrigger value="yearly" className="flex items-center gap-2">
+          <TabsTrigger value="yearly" className="flex items-center gap-1 sm:gap-2">
             <BarChart3Icon className="h-4 w-4" />
-            年次レポート
+            <span className="hidden sm:inline">年次レポート</span>
+            <span className="sm:hidden">年次</span>
           </TabsTrigger>
-          <TabsTrigger value="charts" className="flex items-center gap-2">
+          <TabsTrigger value="charts" className="flex items-center gap-1 sm:gap-2">
             <TrendingUpIcon className="h-4 w-4" />
-            グラフ表示
+            <span className="hidden sm:inline">グラフ表示</span>
+            <span className="sm:hidden">グラフ</span>
           </TabsTrigger>
         </TabsList>
 
@@ -140,9 +143,15 @@ export default function ReportsPage() {
             </CardHeader>
             <CardContent>
               <Tabs defaultValue="monthly-chart" className="space-y-4">
-                <TabsList>
-                  <TabsTrigger value="monthly-chart">月次チャート</TabsTrigger>
-                  <TabsTrigger value="yearly-chart">年次チャート</TabsTrigger>
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="monthly-chart">
+                    <span className="hidden sm:inline">月次チャート</span>
+                    <span className="sm:hidden">月次</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="yearly-chart">
+                    <span className="hidden sm:inline">年次チャート</span>
+                    <span className="sm:hidden">年次</span>
+                  </TabsTrigger>
                 </TabsList>
                 
                 <TabsContent value="monthly-chart">
