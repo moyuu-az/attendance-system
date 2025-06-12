@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
 import { useUserStore } from '@/lib/stores/user'
-import { useToast } from '@/components/ui/use-toast'
+import { useToast } from '@/hooks/use-toast'
 import {
   Form,
   FormControl,
@@ -105,7 +105,7 @@ export function SettingsForm() {
     return (
       <div className="text-center py-8">
         <p className="text-red-600 mb-4">データの読み込みに失敗しました</p>
-        <p className="text-sm text-gray-500">{error?.message || 'Unknown error'}</p>
+        <p className="text-sm text-gray-500">{String(error) || 'Unknown error'}</p>
       </div>
     )
   }

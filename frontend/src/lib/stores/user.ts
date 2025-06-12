@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { userApi } from '@/lib/api'
 import type { User } from '@/types'
-import { toast } from '@/components/ui/use-toast'
+import { toast } from '@/hooks/use-toast'
 
 interface UserState {
   currentUser: User | null

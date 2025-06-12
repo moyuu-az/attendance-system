@@ -17,6 +17,8 @@ const api = axios.create({
   },
 })
 
+export { api }
+
 // ユーザーAPI
 export const userApi = {
   getMe: async (): Promise<User> => {

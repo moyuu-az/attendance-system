@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { attendanceApi, breakApi } from '@/lib/api'
 import type { AttendanceWithBreaks, BreakTime } from '@/types'
-import { toast } from '@/components/ui/use-toast'
+import { toast } from '@/hooks/use-toast'
 
 interface AttendanceState {
   todayAttendance: AttendanceWithBreaks | null

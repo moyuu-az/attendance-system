@@ -1,97 +1,133 @@
-'use client'
+'use client';
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { AttendanceWithBreaks } from '@/types'
-import { format } from 'date-fns'
-import { ja } from 'date-fns/locale'
-import { Clock, Calendar, DollarSign, Coffee } from 'lucide-react'
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Edit2, Trash2, Clock, Calendar, Coffee, DollarSign } from 'lucide-react';
+import { format } from 'date-fns';
+import { ja } from 'date-fns/locale';
+import { AttendanceWithBreaks } from '@/types';
 
 interface AttendanceCardProps {
-  attendance: AttendanceWithBreaks
-  showDate?: boolean
+  attendance: AttendanceWithBreaks;
+  onEdit?: () => void;
+  onDelete?: () => void;
+  showActions?: boolean;
+  showDate?: boolean;
 }
 
-export function AttendanceCard({ attendance, showDate = true }: AttendanceCardProps) {
-  const totalBreakMinutes = attendance.break_times?.reduce(
-    (sum, b) => sum + (b.duration || 0), 
-    0
-  ) || 0
-  const breakHours = Math.floor(totalBreakMinutes / 60)
-  const breakMinutes = totalBreakMinutes % 60
+export function AttendanceCard({ attendance, onEdit, onDelete, showActions = false, showDate = true }: AttendanceCardProps) {
+  const isWeekend = new Date(attendance.date).getDay() === 0 || new Date(attendance.date).getDay() === 6;
+  const totalBreakTime = attendance.break_times?.reduce((sum, breakTime) => sum + (breakTime.duration || 0), 0) || 0;
+  const breakHours = Math.floor(totalBreakTime / 60);
+  const breakMinutes = totalBreakTime % 60;
 
   return (
-    <Card className="card-shadow hover:card-shadow-hover transition-shadow">
-      <CardHeader>
-        <CardTitle className="flex items-center justify-between">
-          {showDate && (
-            <span className="text-lg">
-              {format(new Date(attendance.date), 'MM月dd日 (E)', { locale: ja })}
-            </span>
+    <Card className={`transition-all hover:shadow-md ${isWeekend ? 'bg-muted/30' : ''}`}>
+      <CardContent className="p-4">
+        <div className="flex items-center justify-between">
+          <div className="flex-1 space-y-2">
+            {/* 日付と曜日 */}
+            {showDate && (
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2">
+                  <Calendar className="h-4 w-4 text-muted-foreground" />
+                  <span className="font-medium">
+                    {format(new Date(attendance.date), 'M月d日 (E)', { locale: ja })}
+                  </span>
+                  {isWeekend && (
+                    <Badge variant="secondary" className="ml-2">
+                      週末
+                    </Badge>
+                  )}
+                </div>
+              </div>
+            )}
+            
+            {/* 勤務時間情報 */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              {/* 出勤・退勤時刻 */}
+              <div className="flex items-center gap-2">
+                <Clock className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm">
+                  {attendance.clock_in ? format(new Date(`2000-01-01T${attendance.clock_in}`), 'HH:mm') : '--:--'}
+                  {' - '}
+                  {attendance.clock_out ? format(new Date(`2000-01-01T${attendance.clock_out}`), 'HH:mm') : '--:--'}
+                </span>
+              </div>
+              
+              {/* 休憩時間 */}
+              <div className="flex items-center gap-2">
+                <Coffee className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm">
+                  休憩: {breakHours > 0 ? `${breakHours}時間` : ''}{breakMinutes > 0 ? `${breakMinutes}分` : ''}
+                  {totalBreakTime === 0 && 'なし'}
+                </span>
+              </div>
+              
+              {/* 勤務時間 */}
+              <div className="flex items-center gap-2">
+                <Clock className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm font-medium">
+                  勤務: {attendance.total_hours || 0}時間
+                </span>
+              </div>
+              
+              {/* 給与 */}
+              <div className="flex items-center gap-2">
+                <DollarSign className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm font-medium">
+                  ¥{(attendance.total_amount || 0).toLocaleString()}
+                </span>
+              </div>
+            </div>
+            
+            {/* 休憩時間の詳細 */}
+            {attendance.break_times && attendance.break_times.length > 0 && (
+              <div className="mt-2 pl-6">
+                <div className="text-xs text-muted-foreground space-y-1">
+                  {attendance.break_times.map((breakTime, index) => (
+                    <div key={breakTime.id}>
+                      休憩{index + 1}: {breakTime.start_time ? format(new Date(`2000-01-01T${breakTime.start_time}`), 'HH:mm') : '--:--'}
+                      {' - '}
+                      {breakTime.end_time ? format(new Date(`2000-01-01T${breakTime.end_time}`), 'HH:mm') : '--:--'}
+                      {' ('}
+                      {breakTime.duration}分
+                      {')'}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+          
+          {/* アクションボタン */}
+          {showActions && (
+            <div className="flex gap-2 ml-4">
+              {onEdit && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={onEdit}
+                  className="h-8 w-8"
+                >
+                  <Edit2 className="h-4 w-4" />
+                </Button>
+              )}
+              {onDelete && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={onDelete}
+                  className="h-8 w-8 text-destructive hover:text-destructive"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
           )}
-          <span className="text-sm text-muted-foreground">
-            ID: {attendance.id}
-          </span>
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="flex items-center gap-2">
-            <Clock className="h-4 w-4 text-muted-foreground" />
-            <div>
-              <p className="text-sm text-muted-foreground">出勤</p>
-              <p className="font-medium">{attendance.clock_in || '--:--'}</p>
-            </div>
-          </div>
-          
-          <div className="flex items-center gap-2">
-            <Clock className="h-4 w-4 text-muted-foreground" />
-            <div>
-              <p className="text-sm text-muted-foreground">退勤</p>
-              <p className="font-medium">{attendance.clock_out || '--:--'}</p>
-            </div>
-          </div>
-          
-          <div className="flex items-center gap-2">
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-            <div>
-              <p className="text-sm text-muted-foreground">労働時間</p>
-              <p className="font-medium">
-                {attendance.total_hours ? `${attendance.total_hours}時間` : '--'}
-              </p>
-            </div>
-          </div>
-          
-          <div className="flex items-center gap-2">
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-            <div>
-              <p className="text-sm text-muted-foreground">給与</p>
-              <p className="font-medium">
-                ¥{attendance.total_amount?.toLocaleString() || '0'}
-              </p>
-            </div>
-          </div>
         </div>
-
-        {/* 休憩時間の表示 */}
-        {attendance.break_times && attendance.break_times.length > 0 && (
-          <div className="mt-4 pt-4 border-t">
-            <div className="flex items-center gap-2 mb-2">
-              <Coffee className="h-4 w-4 text-muted-foreground" />
-              <p className="text-sm font-medium">
-                休憩時間: {breakHours}時間{breakMinutes}分
-              </p>
-            </div>
-            <div className="space-y-1">
-              {attendance.break_times.map((breakTime, index) => (
-                <p key={breakTime.id} className="text-sm text-muted-foreground">
-                  {index + 1}. {breakTime.start_time} - {breakTime.end_time || '進行中'} 
-                  {breakTime.duration && ` (${breakTime.duration}分)`}
-                </p>
-              ))}
-            </div>
-          </div>
-        )}
       </CardContent>
     </Card>
-  )
+  );
 }

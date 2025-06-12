@@ -40,6 +40,7 @@ export interface MonthlyReport {
   total_hours: number
   total_amount: number
   average_daily_hours: number
+  hourly_rate?: number
   attendance_list: AttendanceWithBreaks[]
 }
 
