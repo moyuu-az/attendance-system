@@ -9,6 +9,7 @@ import { format } from 'date-fns'
 import { ja } from 'date-fns/locale'
 import { formatTimeJST, formatDateJST } from '@/lib/timezone'
 import { EditAttendanceDialog } from '@/components/forms/EditAttendanceDialog'
+import { useAttendance } from '@/hooks/useAttendance'
 import type { MonthlyCalendar, CalendarDay } from '@/types'
 
 interface AttendanceCalendarTableProps {
@@ -25,6 +26,10 @@ export function AttendanceCalendarTable({
   isLoading
 }: AttendanceCalendarTableProps) {
   const [editingAttendance, setEditingAttendance] = useState<CalendarDay | null>(null)
+  const { updateAttendance, deleteAttendance } = useAttendance({
+    year: selectedMonth.year,
+    month: selectedMonth.month,
+  })
 
   const handlePrevMonth = () => {
     const prevMonth = selectedMonth.month === 1 ? 12 : selectedMonth.month - 1
@@ -189,14 +194,19 @@ export function AttendanceCalendarTable({
           open={!!editingAttendance}
           onOpenChange={(open) => !open && setEditingAttendance(null)}
           onSave={async (data) => {
-            // TODO: カレンダーテーブルでの勤怠更新処理を実装
-            console.log('Calendar update:', data);
-            setEditingAttendance(null);
+            if (editingAttendance?.attendance?.id) {
+              await updateAttendance.mutateAsync({
+                id: editingAttendance.attendance.id,
+                data
+              });
+              setEditingAttendance(null);
+            }
           }}
           onDelete={async () => {
-            // TODO: カレンダーテーブルでの勤怠削除処理を実装
-            console.log('Calendar delete:', editingAttendance.attendance?.id);
-            setEditingAttendance(null);
+            if (editingAttendance?.attendance?.id) {
+              await deleteAttendance.mutateAsync(editingAttendance.attendance.id);
+              setEditingAttendance(null);
+            }
           }}
         />
       )}

@@ -6,14 +6,14 @@ import { cn } from '@/lib/utils'
 import { 
   Home, 
   Calendar, 
-  FileText, 
+  BarChart3, 
   Settings 
 } from 'lucide-react'
 
 const navigation = [
   { name: 'ダッシュボード', href: '/', icon: Home },
   { name: '勤怠一覧', href: '/attendance', icon: Calendar },
-  { name: 'レポート', href: '/reports', icon: FileText },
+  { name: 'レポート', href: '/reports', icon: BarChart3 },
   { name: '設定', href: '/settings', icon: Settings },
 ]
 
