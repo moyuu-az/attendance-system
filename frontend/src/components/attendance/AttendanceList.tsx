@@ -173,6 +173,12 @@ export function AttendanceList({ selectedMonth, onMonthChange, isLoading }: Atte
           open={!!editingAttendance}
           onOpenChange={(open) => !open && setEditingAttendance(null)}
           onSave={handleUpdate}
+          onDelete={async () => {
+            if (editingAttendance) {
+              await deleteAttendance.mutateAsync(editingAttendance.id);
+              setEditingAttendance(null);
+            }
+          }}
         />
       )}
       

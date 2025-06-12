@@ -186,9 +186,18 @@ export function AttendanceCalendarTable({
       {editingAttendance && (
         <EditAttendanceDialog
           attendance={editingAttendance.attendance}
-          date={editingAttendance.date}
           open={!!editingAttendance}
           onOpenChange={(open) => !open && setEditingAttendance(null)}
+          onSave={async (data) => {
+            // TODO: カレンダーテーブルでの勤怠更新処理を実装
+            console.log('Calendar update:', data);
+            setEditingAttendance(null);
+          }}
+          onDelete={async () => {
+            // TODO: カレンダーテーブルでの勤怠削除処理を実装
+            console.log('Calendar delete:', editingAttendance.attendance?.id);
+            setEditingAttendance(null);
+          }}
         />
       )}
     </>

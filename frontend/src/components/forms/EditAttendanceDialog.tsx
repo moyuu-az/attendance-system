@@ -12,10 +12,11 @@ import { Plus, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface EditAttendanceDialogProps {
-  attendance: AttendanceWithBreaks;
+  attendance: AttendanceWithBreaks | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSave: (data: Partial<AttendanceWithBreaks>) => Promise<void>;
+  onDelete?: () => Promise<void>;
 }
 
 interface BreakTimeEdit {
@@ -30,34 +31,42 @@ export function EditAttendanceDialog({
   open,
   onOpenChange,
   onSave,
+  onDelete,
 }: EditAttendanceDialogProps) {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
-    clock_in: attendance.clock_in || '',
-    clock_out: attendance.clock_out || '',
+    clock_in: '',
+    clock_out: '',
   });
   const [breakTimes, setBreakTimes] = useState<BreakTimeEdit[]>([]);
 
+  // attendanceがnullの場合はダイアログを表示しない
+  if (!attendance) {
+    return null;
+  }
+
   useEffect(() => {
     // 勤怠データが変更されたら、フォームデータをリセット
-    setFormData({
-      clock_in: attendance.clock_in || '',
-      clock_out: attendance.clock_out || '',
-    });
-    
-    // 休憩時間データを設定
-    if (attendance.break_times && attendance.break_times.length > 0) {
-      setBreakTimes(
-        attendance.break_times.map((bt) => ({
-          id: bt.id,
-          start_time: bt.start_time || '',
-          end_time: bt.end_time || '',
-          duration: bt.duration,
-        }))
-      );
-    } else {
-      setBreakTimes([]);
+    if (attendance) {
+      setFormData({
+        clock_in: attendance.clock_in || '',
+        clock_out: attendance.clock_out || '',
+      });
+      
+      // 休憩時間データを設定
+      if (attendance.break_times && attendance.break_times.length > 0) {
+        setBreakTimes(
+          attendance.break_times.map((bt) => ({
+            id: bt.id,
+            start_time: bt.start_time || '',
+            end_time: bt.end_time || '',
+            duration: bt.duration,
+          }))
+        );
+      } else {
+        setBreakTimes([]);
+      }
     }
   }, [attendance]);
 
@@ -116,7 +125,7 @@ export function EditAttendanceDialog({
         .filter(bt => bt.start_time && bt.end_time) // 有効な休憩時間のみ
         .map((bt, index) => ({
           id: bt.id || Date.now() + index, // 新規の場合は一時的なIDを生成
-          attendance_id: attendance.id,
+          attendance_id: attendance?.id || 0,
           start_time: bt.start_time,
           end_time: bt.end_time || '',
           duration: bt.duration || 0,
@@ -147,13 +156,35 @@ export function EditAttendanceDialog({
     }
   };
 
+  const handleDelete = async () => {
+    if (!onDelete || !attendance) return;
+    
+    setIsSubmitting(true);
+    try {
+      await onDelete();
+      toast({
+        title: '削除完了',
+        description: '勤怠情報を削除しました',
+      });
+      onOpenChange(false);
+    } catch (error) {
+      toast({
+        title: 'エラー',
+        description: '削除に失敗しました',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle>
-              {format(new Date(attendance.date), 'yyyy年M月d日 (E)', { locale: ja })} の勤怠編集
+              {attendance ? format(new Date(attendance.date), 'yyyy年M月d日 (E)', { locale: ja }) : '勤怠'} の勤怠編集
             </DialogTitle>
           </DialogHeader>
 
@@ -234,18 +265,34 @@ export function EditAttendanceDialog({
             </div>
           </div>
 
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              disabled={isSubmitting}
-            >
-              キャンセル
-            </Button>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? '保存中...' : '保存'}
-            </Button>
+          <DialogFooter className="flex justify-between">
+            <div>
+              {onDelete && (
+                <Button
+                  type="button"
+                  variant="destructive"
+                  onClick={handleDelete}
+                  disabled={isSubmitting}
+                  className="mr-auto"
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  削除
+                </Button>
+              )}
+            </div>
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+                disabled={isSubmitting}
+              >
+                キャンセル
+              </Button>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? '保存中...' : '保存'}
+              </Button>
+            </div>
           </DialogFooter>
         </form>
       </DialogContent>
