@@ -1,5 +1,5 @@
 # 勤怠管理システム Makefile
-.PHONY: help start stop restart restart-fe restart-be logs logs-fe logs-be clean local local-backend local-frontend local-deps local-status
+.PHONY: help start stop restart restart-fe restart-be logs logs-fe logs-be clean local local-backend local-frontend local-deps local-status local-create-user
 
 # デフォルトタスク - ヘルプを表示
 help:
@@ -22,6 +22,7 @@ help:
 	@echo "  make local-frontend - フロントエンドのみローカル起動"
 	@echo "  make local-deps     - ローカル実行用の依存関係インストール"
 	@echo "  make local-status   - ローカルデータベースの状態確認"
+	@echo "  make local-create-user - テストユーザーを作成"
 	@echo ""
 
 # 全サービス起動
@@ -118,3 +119,8 @@ local-status:
 	else \
 		echo "❌ Database file not found. Run 'make local-backend' first."; \
 	fi
+
+local-create-user:
+	@echo "👤 Creating test user..."
+	cd backend && DB_TYPE=sqlite PYTHONPATH=$$(pwd) python create_test_user.py
+	@echo "✅ Test user creation completed!"
