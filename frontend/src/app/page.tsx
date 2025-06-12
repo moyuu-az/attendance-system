@@ -11,6 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Clock, Calendar, DollarSign } from 'lucide-react'
 import { format } from 'date-fns'
 import { ja } from 'date-fns/locale'
+import { formatTimeJST } from '@/lib/timezone'
 
 export default function DashboardPage() {
   const { todayAttendance, fetchTodayAttendance, isLoading } = useAttendanceStore()
@@ -41,7 +42,9 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {todayAttendance?.clock_in || '--:--'}
+                {todayAttendance?.clock_in 
+                  ? formatTimeJST(`2000-01-01T${todayAttendance.clock_in}`) 
+                  : '--:--'}
               </div>
             </CardContent>
           </Card>

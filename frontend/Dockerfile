@@ -3,10 +3,10 @@ FROM node:20-alpine
 WORKDIR /app
 
 # 依存関係ファイルのコピー
-COPY package.json ./
+COPY package.json package-lock.json ./
 
 # 依存関係のインストール
-RUN npm install
+RUN npm ci --legacy-peer-deps
 
 # アプリケーションファイルのコピー
 COPY . .

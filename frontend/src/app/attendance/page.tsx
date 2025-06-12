@@ -2,9 +2,9 @@
 
 import { useState } from 'react';
 import { Layout } from '@/components/layout/Layout';
-import { AttendanceList } from '@/components/attendance/AttendanceList';
+import { AttendanceCalendarTable } from '@/components/attendance/AttendanceCalendarTable';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { CalendarIcon, Clock, DollarSign } from 'lucide-react';
+import { CalendarIcon, Clock, DollarSign, Users, TrendingUp } from 'lucide-react';
 import { format } from 'date-fns';
 import { ja } from 'date-fns/locale';
 import { useAttendance } from '@/hooks/useAttendance';
@@ -16,7 +16,7 @@ export default function AttendancePage() {
     month: currentDate.getMonth() + 1,
   });
 
-  const { monthlyReport, isLoading } = useAttendance({
+  const { monthlyReport, monthlyCalendar, isLoading } = useAttendance({
     year: selectedMonth.year,
     month: selectedMonth.month,
   });
@@ -32,18 +32,48 @@ export default function AttendancePage() {
       </div>
 
       {/* 月次サマリーカード */}
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-5">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">総勤務日数</CardTitle>
+            <CardTitle className="text-sm font-medium">営業日数</CardTitle>
             <CalendarIcon className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {monthlyReport?.total_days || 0}日
+              {monthlyCalendar?.total_working_days || 0}日
             </div>
             <p className="text-xs text-muted-foreground">
               {format(new Date(selectedMonth.year, selectedMonth.month - 1), 'yyyy年M月', { locale: ja })}
+            </p>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">出勤日数</CardTitle>
+            <Users className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {monthlyCalendar?.total_present_days || 0}日
+            </div>
+            <p className="text-xs text-muted-foreground">
+              営業日の{monthlyCalendar?.total_working_days || 0}日中
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">出勤率</CardTitle>
+            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {monthlyCalendar?.attendance_rate || 0}%
+            </div>
+            <p className="text-xs text-muted-foreground">
+              平均出勤率
             </p>
           </CardContent>
         </Card>
@@ -55,7 +85,7 @@ export default function AttendancePage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {monthlyReport?.total_hours || 0}時間
+              {monthlyCalendar?.total_hours || 0}時間
             </div>
             <p className="text-xs text-muted-foreground">
               平均 {monthlyReport?.average_daily_hours || 0}時間/日
@@ -70,7 +100,7 @@ export default function AttendancePage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              ¥{(monthlyReport?.total_amount || 0).toLocaleString()}
+              ¥{(monthlyCalendar?.total_amount || 0).toLocaleString()}
             </div>
             <p className="text-xs text-muted-foreground">
               時給 ¥{monthlyReport?.hourly_rate || 0}
@@ -79,10 +109,11 @@ export default function AttendancePage() {
         </Card>
       </div>
 
-      {/* 勤怠一覧 */}
-      <AttendanceList 
+      {/* 勤怠カレンダーテーブル */}
+      <AttendanceCalendarTable 
         selectedMonth={selectedMonth}
         onMonthChange={setSelectedMonth}
+        monthlyCalendar={monthlyCalendar}
         isLoading={isLoading}
       />
       </div>

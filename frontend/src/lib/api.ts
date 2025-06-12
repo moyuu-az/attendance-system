@@ -5,7 +5,8 @@ import type {
   AttendanceWithBreaks,
   BreakTime, 
   MonthlyReport, 
-  YearlyReport 
+  YearlyReport,
+  MonthlyCalendar
 } from '@/types'
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
@@ -85,6 +86,15 @@ export const attendanceApi = {
   
   delete: async (id: number): Promise<void> => {
     await api.delete(`/api/attendance/${id}`)
+  },
+  
+  getCalendar: async (params: {
+    userId?: number
+    year: number
+    month: number
+  }): Promise<MonthlyCalendar> => {
+    const { data } = await api.get('/api/attendance/calendar', { params })
+    return data
   },
 }
 

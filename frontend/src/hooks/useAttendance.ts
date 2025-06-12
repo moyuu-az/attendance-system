@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { AttendanceWithBreaks, MonthlyReport } from '@/types';
-import { api } from '@/lib/api';
+import { AttendanceWithBreaks, MonthlyReport, MonthlyCalendar } from '@/types';
+import { attendanceApi, reportApi } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
 
 interface UseAttendanceParams {
@@ -15,34 +15,29 @@ export function useAttendance({ year, month }: UseAttendanceParams) {
   // 月次勤怠データ取得
   const attendanceQuery = useQuery<AttendanceWithBreaks[]>({
     queryKey: ['attendance', year, month],
-    queryFn: async () => {
-      const response = await api.get('/attendance', {
-        params: { year, month },
-      });
-      return response.data.data;
-    },
+    queryFn: () => attendanceApi.getList({ userId: 1, year, month }),
   });
 
   // 月次レポート取得
   const monthlyReportQuery = useQuery<MonthlyReport>({
     queryKey: ['monthlyReport', year, month],
-    queryFn: async () => {
-      const response = await api.get('/reports/monthly', {
-        params: { year, month },
-      });
-      return response.data.data;
-    },
+    queryFn: () => reportApi.getMonthly(1, year, month),
+  });
+
+  // 月次カレンダー取得
+  const monthlyCalendarQuery = useQuery<MonthlyCalendar>({
+    queryKey: ['monthlyCalendar', year, month],
+    queryFn: () => attendanceApi.getCalendar({ userId: 1, year, month }),
   });
 
   // 勤怠更新
   const updateAttendance = useMutation({
-    mutationFn: async ({ id, data }: { id: number; data: Partial<AttendanceWithBreaks> }) => {
-      const response = await api.put(`/attendance/${id}`, data);
-      return response.data;
-    },
+    mutationFn: ({ id, data }: { id: number; data: Partial<AttendanceWithBreaks> }) => 
+      attendanceApi.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['attendance', year, month] });
       queryClient.invalidateQueries({ queryKey: ['monthlyReport', year, month] });
+      queryClient.invalidateQueries({ queryKey: ['monthlyCalendar', year, month] });
       toast({
         title: '更新完了',
         description: '勤怠情報を更新しました',
@@ -59,13 +54,11 @@ export function useAttendance({ year, month }: UseAttendanceParams) {
 
   // 勤怠削除
   const deleteAttendance = useMutation({
-    mutationFn: async (id: number) => {
-      const response = await api.delete(`/attendance/${id}`);
-      return response.data;
-    },
+    mutationFn: (id: number) => attendanceApi.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['attendance', year, month] });
       queryClient.invalidateQueries({ queryKey: ['monthlyReport', year, month] });
+      queryClient.invalidateQueries({ queryKey: ['monthlyCalendar', year, month] });
       toast({
         title: '削除完了',
         description: '勤怠情報を削除しました',
@@ -83,8 +76,9 @@ export function useAttendance({ year, month }: UseAttendanceParams) {
   return {
     attendanceList: attendanceQuery.data,
     monthlyReport: monthlyReportQuery.data,
-    isLoading: attendanceQuery.isLoading || monthlyReportQuery.isLoading,
-    isError: attendanceQuery.isError || monthlyReportQuery.isError,
+    monthlyCalendar: monthlyCalendarQuery.data,
+    isLoading: attendanceQuery.isLoading || monthlyReportQuery.isLoading || monthlyCalendarQuery.isLoading,
+    isError: attendanceQuery.isError || monthlyReportQuery.isError || monthlyCalendarQuery.isError,
     updateAttendance,
     deleteAttendance,
   };

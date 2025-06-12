@@ -3,7 +3,8 @@ from sqlalchemy import select, and_
 from sqlalchemy.orm import selectinload
 from datetime import date, datetime, time, timedelta
 from decimal import Decimal
-from typing import Optional
+from typing import Optional, List
+from calendar import monthrange
 import logging
 
 from app.models.attendance import Attendance
@@ -151,3 +152,97 @@ class AttendanceService:
             f"Calculated totals for attendance {attendance.id}: "
             f"{work_hours} hours, {total_amount} yen"
         )
+    
+    async def get_monthly_calendar(
+        self,
+        user_id: int,
+        year: int,
+        month: int
+    ) -> List[dict]:
+        """
+        月間カレンダー形式で勤怠データを取得
+        """
+        from app.schemas.attendance import CalendarDay, AttendanceWithBreaks
+        
+        # 月の全日程を生成
+        _, last_day = monthrange(year, month)
+        all_dates = [date(year, month, day) for day in range(1, last_day + 1)]
+        
+        # 該当月の勤怠データを一括取得
+        result = await self.db.execute(
+            select(Attendance)
+            .options(selectinload(Attendance.break_times))
+            .where(and_(
+                Attendance.user_id == user_id,
+                Attendance.date >= date(year, month, 1),
+                Attendance.date <= date(year, month, last_day)
+            ))
+        )
+        attendances = result.scalars().all()
+        attendance_dict = {a.date: a for a in attendances}
+        
+        # カレンダーデータを構築
+        calendar_days = []
+        for current_date in all_dates:
+            day_of_week = current_date.weekday()  # 0=月曜, 6=日曜
+            is_weekend = day_of_week >= 5  # 土日
+            attendance = attendance_dict.get(current_date)
+            
+            # ステータス判定
+            if is_weekend:
+                status = "weekend"
+            elif attendance and attendance.clock_in:
+                status = "present"
+            else:
+                status = "absent"
+            
+            calendar_day = {
+                "date": current_date,
+                "day_of_week": day_of_week,
+                "is_weekend": is_weekend,
+                "is_holiday": False,  # 将来の祝日対応
+                "attendance": attendance,
+                "status": status
+            }
+            calendar_days.append(calendar_day)
+        
+        return calendar_days
+    
+    async def get_monthly_calendar_summary(
+        self,
+        user_id: int,
+        year: int,
+        month: int
+    ) -> dict:
+        """
+        月間カレンダーの集計データを取得
+        """
+        calendar_days = await self.get_monthly_calendar(user_id, year, month)
+        
+        # 集計計算
+        total_working_days = sum(1 for day in calendar_days if not day["is_weekend"] and not day["is_holiday"])
+        total_present_days = sum(1 for day in calendar_days if day["status"] == "present")
+        
+        # 出勤率計算
+        attendance_rate = Decimal("0")
+        if total_working_days > 0:
+            attendance_rate = Decimal(str(total_present_days / total_working_days * 100)).quantize(Decimal("0.01"))
+        
+        # 総労働時間と総支給額
+        total_hours = Decimal("0")
+        total_amount = Decimal("0")
+        for day in calendar_days:
+            if day["attendance"]:
+                total_hours += day["attendance"].total_hours or Decimal("0")
+                total_amount += day["attendance"].total_amount or Decimal("0")
+        
+        return {
+            "year": year,
+            "month": month,
+            "calendar_days": calendar_days,
+            "total_working_days": total_working_days,
+            "total_present_days": total_present_days,
+            "attendance_rate": attendance_rate,
+            "total_hours": total_hours,
+            "total_amount": total_amount
+        }

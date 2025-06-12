@@ -57,3 +57,23 @@ export interface YearlyReport {
     average_daily_hours: number
   }[]
 }
+
+export interface CalendarDay {
+  date: string
+  day_of_week: number
+  is_weekend: boolean
+  is_holiday: boolean
+  attendance: AttendanceWithBreaks | null
+  status: 'present' | 'absent' | 'weekend' | 'holiday'
+}
+
+export interface MonthlyCalendar {
+  year: number
+  month: number
+  calendar_days: CalendarDay[]
+  total_working_days: number
+  total_present_days: number
+  attendance_rate: number
+  total_hours: number
+  total_amount: number
+}

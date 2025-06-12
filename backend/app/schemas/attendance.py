@@ -66,3 +66,29 @@ class ClockOutRequest(BaseModel):
     """
     user_id: int
     time: Optional[time] = None  # Noneの場合は現在時刻
+
+
+class CalendarDay(BaseModel):
+    """
+    カレンダー表示用の日別データスキーマ
+    """
+    date: date
+    day_of_week: int = Field(description="曜日 (0=月曜, 6=日曜)")
+    is_weekend: bool = Field(description="土日かどうか")
+    is_holiday: bool = Field(default=False, description="祝日かどうか")
+    attendance: Optional[AttendanceWithBreaks] = None
+    status: str = Field(description="出勤状況 (present, absent, weekend, holiday)")
+
+
+class MonthlyCalendarResponse(BaseModel):
+    """
+    月間カレンダーレスポンススキーマ
+    """
+    year: int
+    month: int
+    calendar_days: List[CalendarDay]
+    total_working_days: int = Field(description="営業日数")
+    total_present_days: int = Field(description="出勤日数")
+    attendance_rate: Decimal = Field(decimal_places=2, description="出勤率")
+    total_hours: Decimal = Field(decimal_places=2, description="総労働時間")
+    total_amount: Decimal = Field(decimal_places=2, description="総支給額")

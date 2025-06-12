@@ -11,7 +11,8 @@ from app.models.attendance import Attendance
 from app.models.user import User
 from app.schemas.attendance import (
     AttendanceResponse, AttendanceWithBreaks,
-    ClockInRequest, ClockOutRequest, AttendanceUpdate
+    ClockInRequest, ClockOutRequest, AttendanceUpdate,
+    MonthlyCalendarResponse
 )
 from app.services.attendance_service import AttendanceService
 
@@ -169,3 +170,25 @@ async def delete_attendance(
     await db.commit()
     
     logger.info(f"Attendance {attendance_id} deleted successfully")
+
+
+@router.get("/calendar", response_model=MonthlyCalendarResponse)
+async def get_monthly_calendar(
+    user_id: int = Query(default=1),
+    year: int = Query(..., description="年"),
+    month: int = Query(..., ge=1, le=12, description="月"),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    月間カレンダー形式で勤怠データを取得
+    記録がない日も含めて月の全日程を返す
+    """
+    service = AttendanceService(db)
+    calendar_data = await service.get_monthly_calendar_summary(
+        user_id=user_id,
+        year=year,
+        month=month
+    )
+    
+    logger.info(f"Monthly calendar retrieved for user {user_id}, {year}/{month}")
+    return calendar_data

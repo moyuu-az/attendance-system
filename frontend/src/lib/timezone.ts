@@ -6,7 +6,7 @@
  */
 
 import { format, formatDistanceToNow, parseISO } from 'date-fns';
-import { zonedTimeToUtc, utcToZonedTime, formatInTimeZone } from 'date-fns-tz';
+import { fromZonedTime, toZonedTime, formatInTimeZone } from 'date-fns-tz';
 import { ja } from 'date-fns/locale';
 
 // Japan Standard Time timezone
@@ -18,7 +18,7 @@ export const JST_TIMEZONE = 'Asia/Tokyo';
  * @returns Date object representing current time in JST
  */
 export function nowJST(): Date {
-  return utcToZonedTime(new Date(), JST_TIMEZONE);
+  return toZonedTime(new Date(), JST_TIMEZONE);
 }
 
 /**
@@ -46,7 +46,7 @@ export function nowTimeJST(): string {
  * @returns Date object converted to JST timezone
  */
 export function toJST(date: Date): Date {
-  return utcToZonedTime(date, JST_TIMEZONE);
+  return toZonedTime(date, JST_TIMEZONE);
 }
 
 /**
@@ -56,7 +56,7 @@ export function toJST(date: Date): Date {
  * @returns Date object converted to UTC
  */
 export function jstToUTC(date: Date): Date {
-  return zonedTimeToUtc(date, JST_TIMEZONE);
+  return fromZonedTime(date, JST_TIMEZONE);
 }
 
 /**
@@ -192,7 +192,7 @@ export function getJSTEndOfDay(date?: Date | string): Date {
 export function createJSTDateTime(dateStr: string, timeStr: string): Date {
   const dateTimeStr = `${dateStr}T${timeStr}`;
   const date = new Date(dateTimeStr);
-  return utcToZonedTime(date, JST_TIMEZONE);
+  return toZonedTime(date, JST_TIMEZONE);
 }
 
 /**
