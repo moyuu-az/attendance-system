@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import logging
 
 from app.core.config import settings
-from app.core.database import engine, Base
+from app.core.database import sync_engine, Base
 from app.api.routes import users, attendance, breaks, reports
 
 # ロギング設定
@@ -29,7 +29,7 @@ def startup_event():
     """
     logger.info("Starting up application...")
     # データベーステーブルの作成
-    Base.metadata.create_all(bind=engine)
+    Base.metadata.create_all(bind=sync_engine)
 
 
 @app.on_event("shutdown")
@@ -38,7 +38,7 @@ def shutdown_event():
     アプリケーション終了時の処理
     """
     logger.info("Shutting down application...")
-    engine.dispose()
+    sync_engine.dispose()
 
 # CORS設定
 app.add_middleware(

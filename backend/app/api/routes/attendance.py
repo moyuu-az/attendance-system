@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_
+from sqlalchemy import select, and_, extract
+from sqlalchemy.orm import selectinload
 from typing import List, Optional
 from datetime import date, datetime, time
 import logging
@@ -88,8 +89,6 @@ async def get_attendance_list(
     """
     勤怠一覧を取得（月別フィルタ対応）
     """
-    from sqlalchemy.orm import selectinload
-    from sqlalchemy import extract
     
     query = select(Attendance).where(Attendance.user_id == user_id)
     

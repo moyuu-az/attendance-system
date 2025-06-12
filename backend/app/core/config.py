@@ -22,6 +22,8 @@ class Settings(BaseSettings):
     CORS_ORIGINS: List[str] = [
         "http://localhost:3000",
         "http://frontend:3000",
+        "http://127.0.0.1:3000",
+        "*"  # 開発環境でのテスト用（本番では削除する）
     ]
     
     # JWT設定（簡易実装用）
