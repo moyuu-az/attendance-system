@@ -9,6 +9,7 @@ import logging
 from app.models.attendance import Attendance
 from app.models.user import User
 from app.models.break_time import BreakTime
+from app.utils.timezone import today_jst, now_time_jst, combine_date_time_jst
 
 logger = logging.getLogger(__name__)
 
@@ -34,8 +35,8 @@ class AttendanceService:
         if not user:
             raise ValueError(f"User {user_id} not found")
         
-        today = date.today()
-        current_time = clock_in_time or datetime.now().time()
+        today = today_jst()
+        current_time = clock_in_time or now_time_jst()
         
         # 既存の勤怠記録確認
         result = await self.db.execute(
@@ -74,8 +75,8 @@ class AttendanceService:
         """
         退勤処理
         """
-        today = date.today()
-        current_time = clock_out_time or datetime.now().time()
+        today = today_jst()
+        current_time = clock_out_time or now_time_jst()
         
         # 今日の勤怠記録取得
         result = await self.db.execute(

@@ -6,6 +6,7 @@ import logging
 
 from app.models.break_time import BreakTime
 from app.models.attendance import Attendance
+from app.utils.timezone import now_time_jst
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +35,7 @@ class BreakService:
         if not attendance.clock_in:
             raise ValueError("Cannot start break before clocking in")
         
-        current_time = start_time or datetime.now().time()
+        current_time = start_time or now_time_jst()
         
         # 未終了の休憩がないか確認
         result = await self.db.execute(
@@ -77,7 +78,7 @@ class BreakService:
         if break_time.end_time:
             raise ValueError("Break already ended")
         
-        current_time = end_time or datetime.now().time()
+        current_time = end_time or now_time_jst()
         break_time.end_time = current_time
         
         # 休憩時間の計算

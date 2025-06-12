@@ -39,6 +39,8 @@ services:
       - POSTGRES_DB=attendance_db
       - POSTGRES_USER=user
       - POSTGRES_PASSWORD=password
+      - TZ=Asia/Tokyo
+      - PGTZ=Asia/Tokyo
     ports:
       - "5432:5432"
     volumes:

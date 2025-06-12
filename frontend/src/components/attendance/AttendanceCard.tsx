@@ -4,9 +4,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Edit2, Trash2, Clock, Calendar, Coffee, DollarSign } from 'lucide-react';
-import { format } from 'date-fns';
-import { ja } from 'date-fns/locale';
 import { AttendanceWithBreaks } from '@/types';
+import { formatDateJST, formatTimeJST, toJST } from '@/lib/timezone';
 
 interface AttendanceCardProps {
   attendance: AttendanceWithBreaks;
@@ -17,7 +16,8 @@ interface AttendanceCardProps {
 }
 
 export function AttendanceCard({ attendance, onEdit, onDelete, showActions = false, showDate = true }: AttendanceCardProps) {
-  const isWeekend = new Date(attendance.date).getDay() === 0 || new Date(attendance.date).getDay() === 6;
+  const attendanceDate = toJST(new Date(attendance.date));
+  const isWeekend = attendanceDate.getDay() === 0 || attendanceDate.getDay() === 6;
   const totalBreakTime = attendance.break_times?.reduce((sum, breakTime) => sum + (breakTime.duration || 0), 0) || 0;
   const breakHours = Math.floor(totalBreakTime / 60);
   const breakMinutes = totalBreakTime % 60;
@@ -33,7 +33,7 @@ export function AttendanceCard({ attendance, onEdit, onDelete, showActions = fal
                 <div className="flex items-center gap-2">
                   <Calendar className="h-4 w-4 text-muted-foreground" />
                   <span className="font-medium">
-                    {format(new Date(attendance.date), 'M月d日 (E)', { locale: ja })}
+                    {formatDateJST(attendance.date).replace('年', '年').replace('月', '月')}
                   </span>
                   {isWeekend && (
                     <Badge variant="secondary" className="ml-2">
@@ -50,9 +50,9 @@ export function AttendanceCard({ attendance, onEdit, onDelete, showActions = fal
               <div className="flex items-center gap-2">
                 <Clock className="h-4 w-4 text-muted-foreground" />
                 <span className="text-sm">
-                  {attendance.clock_in ? format(new Date(`2000-01-01T${attendance.clock_in}`), 'HH:mm') : '--:--'}
+                  {attendance.clock_in ? formatTimeJST(`2000-01-01T${attendance.clock_in}`) : '--:--'}
                   {' - '}
-                  {attendance.clock_out ? format(new Date(`2000-01-01T${attendance.clock_out}`), 'HH:mm') : '--:--'}
+                  {attendance.clock_out ? formatTimeJST(`2000-01-01T${attendance.clock_out}`) : '--:--'}
                 </span>
               </div>
               
@@ -88,9 +88,9 @@ export function AttendanceCard({ attendance, onEdit, onDelete, showActions = fal
                 <div className="text-xs text-muted-foreground space-y-1">
                   {attendance.break_times.map((breakTime, index) => (
                     <div key={breakTime.id}>
-                      休憩{index + 1}: {breakTime.start_time ? format(new Date(`2000-01-01T${breakTime.start_time}`), 'HH:mm') : '--:--'}
+                      休憩{index + 1}: {breakTime.start_time ? formatTimeJST(`2000-01-01T${breakTime.start_time}`) : '--:--'}
                       {' - '}
-                      {breakTime.end_time ? format(new Date(`2000-01-01T${breakTime.end_time}`), 'HH:mm') : '--:--'}
+                      {breakTime.end_time ? formatTimeJST(`2000-01-01T${breakTime.end_time}`) : '--:--'}
                       {' ('}
                       {breakTime.duration}分
                       {')'}

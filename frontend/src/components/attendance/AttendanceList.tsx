@@ -6,8 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
-import { format } from 'date-fns';
-import { ja } from 'date-fns/locale';
+import { formatJST, getCurrentMonthJST } from '@/lib/timezone';
 import { EditAttendanceDialog } from '@/components/forms/EditAttendanceDialog';
 import { DeleteConfirmDialog } from '@/components/common/DeleteConfirmDialog';
 import { useAttendance } from '@/hooks/useAttendance';
@@ -31,7 +30,8 @@ export function AttendanceList({ selectedMonth, onMonthChange, isLoading }: Atte
     month: selectedMonth.month,
   });
 
-  const years = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - 2 + i);
+  const currentYear = getCurrentMonthJST().year;
+  const years = Array.from({ length: 5 }, (_, i) => currentYear - 2 + i);
   const months = Array.from({ length: 12 }, (_, i) => i + 1);
 
   const handlePreviousMonth = () => {
@@ -159,7 +159,7 @@ export function AttendanceList({ selectedMonth, onMonthChange, isLoading }: Atte
           ) : (
             <div className="text-center py-12">
               <p className="text-muted-foreground">
-                {format(new Date(selectedMonth.year, selectedMonth.month - 1), 'yyyy年M月', { locale: ja })}の勤怠記録はありません
+                {selectedMonth.year}年{selectedMonth.month}月の勤怠記録はありません
               </p>
             </div>
           )}
@@ -183,7 +183,7 @@ export function AttendanceList({ selectedMonth, onMonthChange, isLoading }: Atte
           onOpenChange={(open) => !open && setDeletingAttendance(null)}
           onConfirm={handleDelete}
           title="勤怠記録を削除"
-          description={`${format(new Date(deletingAttendance.date), 'yyyy年M月d日', { locale: ja })}の勤怠記録を削除してもよろしいですか？`}
+          description={`${formatJST(deletingAttendance.date, 'yyyy年M月d日')}の勤怠記録を削除してもよろしいですか？`}
         />
       )}
     </>

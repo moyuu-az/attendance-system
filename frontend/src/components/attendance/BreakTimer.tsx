@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { useAttendanceStore } from '@/lib/stores/attendance'
 import { Coffee, Play, Pause } from 'lucide-react'
-import { format } from 'date-fns'
+import { calculateElapsedTimeJST, formatElapsedTime, todayJST } from '@/lib/timezone'
 
 interface BreakTimerProps {
   attendanceId: number
@@ -26,9 +26,7 @@ export function BreakTimer({ attendanceId }: BreakTimerProps) {
 
     const interval = setInterval(() => {
       if (activeBreak?.start_time) {
-        const start = new Date(`1970-01-01T${activeBreak.start_time}`)
-        const now = new Date()
-        const elapsed = Math.floor((now.getTime() - start.getTime()) / 1000)
+        const elapsed = calculateElapsedTimeJST(activeBreak.start_time, todayJST())
         setElapsedTime(elapsed)
       }
     }, 1000)
@@ -36,14 +34,6 @@ export function BreakTimer({ attendanceId }: BreakTimerProps) {
     return () => clearInterval(interval)
   }, [isOnBreak, activeBreak])
 
-  const formatElapsedTime = (seconds: number) => {
-    const hours = Math.floor(seconds / 3600)
-    const minutes = Math.floor((seconds % 3600) / 60)
-    const secs = seconds % 60
-    return `${hours.toString().padStart(2, '0')}:${minutes
-      .toString()
-      .padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
-  }
 
   const handleBreakToggle = async () => {
     if (isOnBreak && activeBreak) {
