@@ -118,14 +118,11 @@ export function EditAttendanceDialog({
       // 休憩時間データを適切な形式に変換
       const formattedBreakTimes = breakTimes
         .filter(bt => bt.start_time && bt.end_time) // 有効な休憩時間のみ
-        .map((bt, index) => ({
-          id: bt.id || Date.now() + index, // 新規の場合は一時的なIDを生成
-          attendance_id: attendance?.id || 0,
+        .map((bt) => ({
+          id: bt.id && bt.id > 0 ? bt.id : undefined, // 既存のIDのみ送信、新規はundefined
           start_time: bt.start_time,
           end_time: bt.end_time || '',
           duration: bt.duration || 0,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
         }));
 
       await onSave({

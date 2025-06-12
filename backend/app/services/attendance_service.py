@@ -1,5 +1,5 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_
+from sqlalchemy import select, and_, delete
 from sqlalchemy.orm import selectinload
 from datetime import date, datetime, time, timedelta
 from decimal import Decimal
@@ -152,6 +152,96 @@ class AttendanceService:
             f"Calculated totals for attendance {attendance.id}: "
             f"{work_hours} hours, {total_amount} yen"
         )
+    
+    async def update_break_times(
+        self,
+        attendance: Attendance,
+        break_times_data: List[dict]
+    ) -> None:
+        """
+        勤怠に紐づく休憩時間を更新
+        
+        Args:
+            attendance: 勤怠レコード
+            break_times_data: 休憩時間データのリスト
+        """
+        if not break_times_data:
+            # 休憩時間データがない場合は既存の休憩時間をすべて削除
+            await self.db.execute(
+                delete(BreakTime).where(BreakTime.attendance_id == attendance.id)
+            )
+            logger.info(f"All break times deleted for attendance {attendance.id}")
+            return
+        
+        # 既存の休憩時間を取得
+        result = await self.db.execute(
+            select(BreakTime).where(BreakTime.attendance_id == attendance.id)
+        )
+        existing_breaks = {bt.id: bt for bt in result.scalars().all()}
+        
+        # 更新・作成予定のIDセット
+        updated_ids = set()
+        
+        for break_data in break_times_data:
+            break_id = break_data.get('id')
+            start_time = break_data.get('start_time')
+            end_time = break_data.get('end_time')
+            
+            if not start_time or not end_time:
+                logger.warning(f"Invalid break time data: {break_data}")
+                continue
+            
+            # duration計算
+            duration = self._calculate_break_duration(start_time, end_time)
+            
+            # 既存のIDが指定されており、実際に存在する場合のみ更新
+            if break_id and isinstance(break_id, int) and break_id > 0 and break_id in existing_breaks:
+                # 既存の休憩時間を更新
+                break_time = existing_breaks[break_id]
+                break_time.start_time = start_time
+                break_time.end_time = end_time
+                break_time.duration = duration
+                updated_ids.add(break_id)
+                
+                logger.info(f"Updated break time {break_id}: {start_time} - {end_time} ({duration} min)")
+            else:
+                # 新規休憩時間を作成
+                new_break = BreakTime(
+                    attendance_id=attendance.id,
+                    start_time=start_time,
+                    end_time=end_time,
+                    duration=duration
+                )
+                self.db.add(new_break)
+                
+                logger.info(f"Created new break time: {start_time} - {end_time} ({duration} min)")
+        
+        # 削除対象の休憩時間を削除
+        for break_id, break_time in existing_breaks.items():
+            if break_id not in updated_ids:
+                await self.db.delete(break_time)
+                logger.info(f"Deleted break time {break_id}")
+    
+    def _calculate_break_duration(self, start_time: time, end_time: time) -> int:
+        """
+        休憩時間の長さを計算（分単位）
+        
+        Args:
+            start_time: 休憩開始時刻
+            end_time: 休憩終了時刻
+            
+        Returns:
+            休憩時間（分）
+        """
+        start_dt = datetime.combine(date.today(), start_time)
+        end_dt = datetime.combine(date.today(), end_time)
+        
+        # 日跨ぎ対応
+        if end_dt < start_dt:
+            end_dt += timedelta(days=1)
+        
+        duration_minutes = int((end_dt - start_dt).total_seconds() / 60)
+        return max(0, duration_minutes)  # 負の値を防止
     
     async def get_monthly_calendar(
         self,

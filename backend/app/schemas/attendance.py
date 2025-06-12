@@ -22,12 +22,23 @@ class AttendanceCreate(AttendanceBase):
     user_id: int
 
 
+class BreakTimeUpdateItem(BaseModel):
+    """
+    休憩時間更新アイテム
+    """
+    id: Optional[int] = None  # 新規作成の場合はNone
+    start_time: time
+    end_time: time
+    duration: Optional[int] = None  # 自動計算される
+
+
 class AttendanceUpdate(BaseModel):
     """
     勤怠更新用スキーマ
     """
     clock_in: Optional[time] = None
     clock_out: Optional[time] = None
+    break_times: Optional[List[BreakTimeUpdateItem]] = None
 
 
 class AttendanceResponse(AttendanceBase):

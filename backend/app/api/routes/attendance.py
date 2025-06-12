@@ -183,20 +183,46 @@ async def update_attendance(
             detail="Attendance record not found"
         )
     
-    # 更新データの適用
-    update_data = attendance_update.model_dump(exclude_unset=True)
-    for field, value in update_data.items():
-        setattr(attendance, field, value)
+    try:
+        service = AttendanceService(db)
+        
+        # 更新データの適用（break_timesを除く）
+        update_data = attendance_update.model_dump(exclude_unset=True, exclude={'break_times'})
+        for field, value in update_data.items():
+            setattr(attendance, field, value)
+        
+        # 休憩時間の更新処理
+        if attendance_update.break_times is not None:
+            # Pydanticモデルを辞書に変換
+            break_times_data = [
+                {
+                    'id': bt.id,
+                    'start_time': bt.start_time,
+                    'end_time': bt.end_time,
+                    'duration': bt.duration
+                }
+                for bt in attendance_update.break_times
+            ]
+            
+            logger.info(f"Updating break times for attendance {attendance_id}: {len(break_times_data)} items")
+            await service.update_break_times(attendance, break_times_data)
+        
+        # 労働時間と金額の再計算
+        await service.calculate_totals(attendance)
+        
+        await db.commit()
+        await db.refresh(attendance)
+        
+        logger.info(f"Attendance {attendance_id} updated successfully with break times")
+        return attendance
     
-    # 労働時間と金額の再計算
-    service = AttendanceService(db)
-    await service.calculate_totals(attendance)
-    
-    await db.commit()
-    await db.refresh(attendance)
-    
-    logger.info(f"Attendance {attendance_id} updated successfully")
-    return attendance
+    except Exception as e:
+        logger.error(f"Failed to update attendance {attendance_id}: {e}")
+        await db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to update attendance: {str(e)}"
+        )
 
 
 @router.delete("/{attendance_id}", status_code=status.HTTP_204_NO_CONTENT)
