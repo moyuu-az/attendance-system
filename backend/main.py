@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import logging
 
 from app.core.config import settings
-from app.core.database import sync_engine, Base
+from app.core.database import sync_engine, Base, initialize_database
 from app.api.routes import users, attendance, breaks, reports
 
 # ロギング設定
@@ -28,8 +28,16 @@ def startup_event():
     アプリケーション起動時の処理
     """
     logger.info("Starting up application...")
-    # データベーステーブルの作成
-    Base.metadata.create_all(bind=sync_engine)
+    logger.info(f"Database type: {settings.DB_TYPE}")
+    logger.info(f"Database URL: {settings.DATABASE_URL}")
+    
+    # データベースの初期化
+    try:
+        initialize_database()
+        logger.info("Database initialized successfully")
+    except Exception as e:
+        logger.error(f"Failed to initialize database: {e}")
+        raise
 
 
 @app.on_event("shutdown")

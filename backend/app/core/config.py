@@ -1,6 +1,7 @@
 from pydantic_settings import BaseSettings
 from typing import List
 import os
+import pathlib
 
 
 class Settings(BaseSettings):
@@ -13,10 +14,33 @@ class Settings(BaseSettings):
     DEBUG: bool = True
     
     # データベース設定
-    DATABASE_URL: str = os.getenv(
-        "DATABASE_URL",
-        "postgresql://user:password@database:5432/attendance_db"
-    )
+    DB_TYPE: str = os.getenv("DB_TYPE", "postgresql")  # sqlite または postgresql
+    
+    def _get_database_url(self) -> str:
+        """
+        データベースタイプに応じたDATABASE_URLを生成
+        """
+        if self.DB_TYPE.lower() == "sqlite":
+            # ユーザーホームディレクトリに.attendanceフォルダを作成
+            home_dir = pathlib.Path.home()
+            db_dir = home_dir / ".attendance"
+            db_dir.mkdir(exist_ok=True)
+            
+            db_path = db_dir / "attendance.db"
+            return f"sqlite:///{db_path}"
+        else:
+            # PostgreSQL (従来の設定)
+            return os.getenv(
+                "DATABASE_URL",
+                "postgresql://user:password@database:5432/attendance_db"
+            )
+    
+    @property
+    def DATABASE_URL(self) -> str:
+        """
+        データベース接続URLを動的に生成
+        """
+        return self._get_database_url()
     
     # CORS設定
     CORS_ORIGINS: List[str] = [

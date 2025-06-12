@@ -1,10 +1,11 @@
 # 勤怠管理システム Makefile
-.PHONY: help start stop restart restart-fe restart-be logs logs-fe logs-be clean
+.PHONY: help start stop restart restart-fe restart-be logs logs-fe logs-be clean local local-backend local-frontend local-deps local-status
 
 # デフォルトタスク - ヘルプを表示
 help:
 	@echo "勤怠管理システム - 利用可能なコマンド:"
 	@echo ""
+	@echo "🐳 Docker モード:"
 	@echo "  make start          - 全サービス起動"
 	@echo "  make stop           - 全サービス停止"
 	@echo "  make restart        - 全サービス再起動"
@@ -14,6 +15,13 @@ help:
 	@echo "  make logs-fe        - フロントエンドのログ表示"
 	@echo "  make logs-be        - バックエンドのログ表示"
 	@echo "  make clean          - ボリュームとコンテナの削除"
+	@echo ""
+	@echo "🏠 ローカル SQLite モード:"
+	@echo "  make local          - フル起動（フロント+バック）"
+	@echo "  make local-backend  - バックエンドのみローカル起動"
+	@echo "  make local-frontend - フロントエンドのみローカル起動"
+	@echo "  make local-deps     - ローカル実行用の依存関係インストール"
+	@echo "  make local-status   - ローカルデータベースの状態確認"
 	@echo ""
 
 # 全サービス起動
@@ -65,3 +73,48 @@ clean:
 	@read -p "続行しますか？ (y/N): " confirm && [ "$$confirm" = "y" ] || exit 1
 	docker-compose down -v
 	@echo "✅ 全てのコンテナとボリュームが削除されました"
+
+# ローカル SQLite モード
+local-deps:
+	@echo "📦 Installing backend dependencies..."
+	cd backend && pip install -r requirements.txt
+	@echo "📦 Installing frontend dependencies..."
+	cd frontend && npm install
+	@echo "✅ All dependencies installed!"
+
+local-backend:
+	@echo "🚀 Starting backend in SQLite mode..."
+	@echo "📁 Data will be saved to: ~/.attendance/attendance.db"
+	@echo "🌐 Backend URL: http://localhost:8000"
+	cd backend && DB_TYPE=sqlite PYTHONPATH=$$(pwd) uvicorn main:app --reload --host 0.0.0.0 --port 8000
+
+local-frontend:
+	@echo "🎨 Starting frontend..."
+	@echo "🌐 Frontend URL: http://localhost:3000"
+	cd frontend && npm run dev
+
+local:
+	@echo "🚀 Starting full application in local SQLite mode..."
+	@echo "📁 Data will be saved to: ~/.attendance/attendance.db"
+	@echo "🌐 Backend: http://localhost:8000"
+	@echo "🌐 Frontend: http://localhost:3000"
+	@echo ""
+	@echo "Press Ctrl+C to stop both services"
+	@echo ""
+	@trap 'kill 0' EXIT; \
+	(cd backend && DB_TYPE=sqlite PYTHONPATH=$$(pwd) uvicorn main:app --reload --host 0.0.0.0 --port 8000) & \
+	(cd frontend && npm run dev) & \
+	wait
+
+local-status:
+	@echo "📊 Local SQLite Database Status:"
+	@echo "🗂️  Database location: ~/.attendance/"
+	@if [ -f ~/.attendance/attendance.db ]; then \
+		echo "✅ Database file exists ($$(ls -lh ~/.attendance/attendance.db | awk '{print $$5}'))"; \
+		echo "📋 Tables:"; \
+		sqlite3 ~/.attendance/attendance.db ".tables" | sed 's/^/   - /'; \
+		echo "👥 Users count: $$(sqlite3 ~/.attendance/attendance.db 'SELECT COUNT(*) FROM users;')"; \
+		echo "📝 Attendance records: $$(sqlite3 ~/.attendance/attendance.db 'SELECT COUNT(*) FROM attendance;')"; \
+	else \
+		echo "❌ Database file not found. Run 'make local-backend' first."; \
+	fi
