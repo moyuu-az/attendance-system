@@ -4,11 +4,12 @@ import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { ChevronLeft, ChevronRight, Edit } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Edit, Plus } from 'lucide-react'
 import { format } from 'date-fns'
 import { ja } from 'date-fns/locale'
 import { formatTimeJST, formatDateJST } from '@/lib/timezone'
 import { EditAttendanceDialog } from '@/components/forms/EditAttendanceDialog'
+import { CreateAttendanceDialog } from '@/components/forms/CreateAttendanceDialog'
 import { useAttendance } from '@/hooks/useAttendance'
 import type { MonthlyCalendar, CalendarDay } from '@/types'
 
@@ -26,7 +27,8 @@ export function AttendanceCalendarTable({
   isLoading
 }: AttendanceCalendarTableProps) {
   const [editingAttendance, setEditingAttendance] = useState<CalendarDay | null>(null)
-  const { updateAttendance, deleteAttendance } = useAttendance({
+  const [creatingDate, setCreatingDate] = useState<string | null>(null)
+  const { updateAttendance, deleteAttendance, createAttendance } = useAttendance({
     year: selectedMonth.year,
     month: selectedMonth.month,
   })
@@ -165,14 +167,27 @@ export function AttendanceCalendarTable({
                             `¥${day.attendance.total_amount.toLocaleString()}` : '¥0'}
                         </td>
                         <td className="p-3">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => setEditingAttendance(day)}
-                            className="h-8 w-8 p-0"
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
+                          {day.attendance ? (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setEditingAttendance(day)}
+                              className="h-8 w-8 p-0"
+                              title="編集"
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                          ) : (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setCreatingDate(day.date)}
+                              className="h-8 w-8 p-0"
+                              title="記録追加"
+                            >
+                              <Plus className="h-4 w-4" />
+                            </Button>
+                          )}
                         </td>
                       </tr>
                     )
@@ -207,6 +222,18 @@ export function AttendanceCalendarTable({
               await deleteAttendance.mutateAsync(editingAttendance.attendance.id);
               setEditingAttendance(null);
             }
+          }}
+        />
+      )}
+      
+      {creatingDate && (
+        <CreateAttendanceDialog
+          selectedDate={creatingDate}
+          open={!!creatingDate}
+          onOpenChange={(open) => !open && setCreatingDate(null)}
+          onSave={async (data) => {
+            await createAttendance.mutateAsync(data);
+            setCreatingDate(null);
           }}
         />
       )}

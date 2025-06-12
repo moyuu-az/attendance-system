@@ -73,6 +73,32 @@ export function useAttendance({ year, month }: UseAttendanceParams) {
     },
   });
 
+  // 勤怠新規作成
+  const createAttendance = useMutation({
+    mutationFn: (data: { 
+      user_id: number
+      date: string
+      clock_in?: string
+      clock_out?: string
+    }) => attendanceApi.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['attendance', year, month] });
+      queryClient.invalidateQueries({ queryKey: ['monthlyReport', year, month] });
+      queryClient.invalidateQueries({ queryKey: ['monthlyCalendar', year, month] });
+      toast({
+        title: '作成完了',
+        description: '勤怠情報を作成しました',
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'エラー',
+        description: error.response?.data?.detail || '作成に失敗しました',
+        variant: 'destructive',
+      });
+    },
+  });
+
   return {
     attendanceList: attendanceQuery.data,
     monthlyReport: monthlyReportQuery.data,
@@ -81,5 +107,6 @@ export function useAttendance({ year, month }: UseAttendanceParams) {
     isError: attendanceQuery.isError || monthlyReportQuery.isError || monthlyCalendarQuery.isError,
     updateAttendance,
     deleteAttendance,
+    createAttendance,
   };
 }

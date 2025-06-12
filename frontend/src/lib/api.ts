@@ -47,6 +47,16 @@ export const userApi = {
 
 // 勤怠API
 export const attendanceApi = {
+  create: async (attendanceData: { 
+    user_id: number
+    date: string
+    clock_in?: string
+    clock_out?: string
+  }): Promise<Attendance> => {
+    const { data } = await api.post('/api/attendance', attendanceData)
+    return data
+  },
+  
   clockIn: async (userId: number, time?: string): Promise<Attendance> => {
     const { data } = await api.post('/api/attendance/clock-in', {
       user_id: userId,

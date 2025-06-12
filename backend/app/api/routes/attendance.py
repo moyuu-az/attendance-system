@@ -11,7 +11,7 @@ from app.models.attendance import Attendance
 from app.models.user import User
 from app.schemas.attendance import (
     AttendanceResponse, AttendanceWithBreaks,
-    ClockInRequest, ClockOutRequest, AttendanceUpdate,
+    ClockInRequest, ClockOutRequest, AttendanceUpdate, AttendanceCreate,
     MonthlyCalendarResponse
 )
 from app.services.attendance_service import AttendanceService
@@ -49,6 +49,53 @@ async def clock_out(
         user_id=request.user_id,
         clock_out_time=request.time
     )
+    return attendance
+
+
+@router.post("/", response_model=AttendanceResponse)
+async def create_attendance(
+    attendance_create: AttendanceCreate,
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    新規勤怠記録作成
+    指定された日付で新しい勤怠記録を作成します
+    """
+    # 指定日付の勤怠記録が既に存在するかチェック
+    result = await db.execute(
+        select(Attendance).where(and_(
+            Attendance.user_id == attendance_create.user_id,
+            Attendance.date == attendance_create.date
+        ))
+    )
+    existing_attendance = result.scalar_one_or_none()
+    
+    if existing_attendance:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"Attendance record already exists for {attendance_create.date}"
+        )
+    
+    # 新しい勤怠記録を作成
+    attendance = Attendance(
+        user_id=attendance_create.user_id,
+        date=attendance_create.date,
+        clock_in=attendance_create.clock_in,
+        clock_out=attendance_create.clock_out,
+        total_hours=0,
+        total_amount=0
+    )
+    
+    db.add(attendance)
+    
+    # 労働時間と金額の計算
+    service = AttendanceService(db)
+    await service.calculate_totals(attendance)
+    
+    await db.commit()
+    await db.refresh(attendance)
+    
+    logger.info(f"New attendance record created for user {attendance_create.user_id} on {attendance_create.date}")
     return attendance
 
 
