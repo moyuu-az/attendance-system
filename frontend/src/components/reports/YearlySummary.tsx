@@ -59,17 +59,17 @@ export function YearlySummary({ userId = 1 }: YearlySummaryProps) {
   }
 
   /**
-   * 最대労働時間を持つ月を검색
+   * 最大労働時間を持つ月を検索
    */
   const getMaxHoursMonth = () => {
     if (!yearlyReport?.monthly_summary?.length) return null
-    return yearlyReport.monthly_summary.reduce((max, current) => 
+    return yearlyReport.monthly_summary.reduce((max, current) =>
       current.total_hours > max.total_hours ? current : max
     )
   }
 
   /**
-   * 平均월간労働時間계산
+   * 平均月間労働時間計算
    */
   const calculateAverageMonthlyHours = () => {
     if (!yearlyReport?.monthly_summary?.length) return 0
@@ -84,14 +84,14 @@ export function YearlySummary({ userId = 1 }: YearlySummaryProps) {
     return (
       <Card className="border-destructive">
         <CardHeader>
-          <CardTitle className="text-destructive">エラーが발생했습니다</CardTitle>
+          <CardTitle className="text-destructive">エラーが発生しました</CardTitle>
           <CardDescription>
-            년차レポートの取得に実패했습니다. 시간을おいて재시행해주세요.
+            年次レポートの取得に失敗しました。時間をおいて再試行してください。
           </CardDescription>
         </CardHeader>
         <CardContent>
           <Button onClick={() => refetch()} variant="outline">
-            재시행
+            再試行
           </Button>
         </CardContent>
       </Card>
@@ -100,22 +100,22 @@ export function YearlySummary({ userId = 1 }: YearlySummaryProps) {
 
   return (
     <div className="space-y-6">
-      {/* 년도선택섹션 */}
+      {/* 年度選択セクション */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <BarChart3Icon className="h-5 w-5" />
-            년차レポート
+            年次レポート
           </CardTitle>
           <CardDescription>
-            지정된년도의근태실적과통계정보를표시합니다
+            指定された年度の勤怠実績と統計情報を表示します
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex gap-4 items-center">
             <div className="flex items-center gap-2">
               <label htmlFor="year-select" className="text-sm font-medium">
-                년도:
+                年度:
               </label>
               <Select
                 value={selectedYear.toString()}
@@ -127,7 +127,7 @@ export function YearlySummary({ userId = 1 }: YearlySummaryProps) {
                 <SelectContent>
                   {generateYearOptions().map((year) => (
                     <SelectItem key={year} value={year.toString()}>
-                      {year}년
+                      {year}年
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -137,68 +137,68 @@ export function YearlySummary({ userId = 1 }: YearlySummaryProps) {
         </CardContent>
       </Card>
 
-      {/* 로딩표시 */}
+      {/* ローディング表示 */}
       {isLoading && (
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center justify-center py-12">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-              <span className="ml-3 text-muted-foreground">레포트를읽어오는중...</span>
+              <span className="ml-3 text-muted-foreground">レポートを読み込み中...</span>
             </div>
           </CardContent>
         </Card>
       )}
 
-      {/* 년간통계 summary카드 */}
+      {/* 年間統計サマリーカード */}
       {yearlyReport && (
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {/* 년간출근일수 */}
+            {/* 年間出勤日数 */}
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">년간출근일수</CardTitle>
+                <CardTitle className="text-sm font-medium">年間出勤日数</CardTitle>
                 <CalendarIcon className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{yearlyReport.total_days}일</div>
+                <div className="text-2xl font-bold">{yearlyReport.total_days}日</div>
                 <p className="text-xs text-muted-foreground">
-                  {selectedYear}년 총계
+                  {selectedYear}年 総計
                 </p>
               </CardContent>
             </Card>
 
-            {/* 년간총노동시간 */}
+            {/* 年間総労働時間 */}
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">년간총노동시간</CardTitle>
+                <CardTitle className="text-sm font-medium">年間総労働時間</CardTitle>
                 <ClockIcon className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{yearlyReport.total_hours}시간</div>
+                <div className="text-2xl font-bold">{yearlyReport.total_hours}時間</div>
                 <p className="text-xs text-muted-foreground">
-                  월평균 {calculateAverageMonthlyHours()}시간
+                  月平均 {calculateAverageMonthlyHours()}時間
                 </p>
               </CardContent>
             </Card>
 
-            {/* 년간총지급액 */}
+            {/* 年間総支給額 */}
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">년간총지급액</CardTitle>
+                <CardTitle className="text-sm font-medium">年間総支給額</CardTitle>
                 <DollarSignIcon className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">¥{Number(yearlyReport.total_amount).toLocaleString()}</div>
                 <p className="text-xs text-muted-foreground">
-                  월평균 ¥{Math.round(Number(yearlyReport.total_amount) / 12).toLocaleString()}
+                  月平均 ¥{Math.round(Number(yearlyReport.total_amount) / 12).toLocaleString()}
                 </p>
               </CardContent>
             </Card>
 
-            {/* 최고실적월 */}
+            {/* 最高実績月 */}
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">최고실적월</CardTitle>
+                <CardTitle className="text-sm font-medium">最高実績月</CardTitle>
                 <TrendingUpIcon className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
@@ -206,24 +206,24 @@ export function YearlySummary({ userId = 1 }: YearlySummaryProps) {
                   {getMaxHoursMonth() ? getMonthName(getMaxHoursMonth()!.month) : '-'}
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  {getMaxHoursMonth() ? `${getMaxHoursMonth()!.total_hours}시간` : '데이터없음'}
+                  {getMaxHoursMonth() ? `${getMaxHoursMonth()!.total_hours}時間` : 'データなし'}
                 </p>
               </CardContent>
             </Card>
           </div>
 
-          {/* 월별상세통계표 */}
+          {/* 月別詳細統計表 */}
           <Card>
             <CardHeader>
-              <CardTitle>월별상세통계</CardTitle>
+              <CardTitle>月別詳細統計</CardTitle>
               <CardDescription>
-                {selectedYear}년의월별근태실적상세
+                {selectedYear}年の月別勤怠実績詳細
               </CardDescription>
             </CardHeader>
             <CardContent>
               {yearlyReport.monthly_summary.length === 0 ? (
                 <div className="text-center py-12 text-muted-foreground">
-                  이기간의근태기록이없습니다
+                  この期間の勤怠記録がありません
                 </div>
               ) : (
                 <div className="space-y-4">
@@ -232,7 +232,7 @@ export function YearlySummary({ userId = 1 }: YearlySummaryProps) {
                     const monthAmount = Number(monthData.total_amount)
                     const maxHours = Math.max(...yearlyReport.monthly_summary.map(m => Number(m.total_hours)))
                     const progressPercentage = maxHours > 0 ? (monthHours / maxHours) * 100 : 0
-                    
+
                     return (
                       <div key={monthData.month} className="border rounded-lg p-4">
                         <div className="flex items-center justify-between mb-2">
@@ -241,42 +241,42 @@ export function YearlySummary({ userId = 1 }: YearlySummaryProps) {
                               {getMonthName(monthData.month)}
                             </h3>
                             <div className="text-sm text-muted-foreground">
-                              {monthData.total_days}일 출근
+                              {monthData.total_days}日 出勤
                             </div>
                           </div>
                           <div className="text-right">
                             <div className="text-lg font-bold">
-                              {monthData.total_hours}시간
+                              {monthData.total_hours}時間
                             </div>
                             <div className="text-sm text-muted-foreground">
                               ¥{monthAmount.toLocaleString()}
                             </div>
                           </div>
                         </div>
-                        
+
                         <div className="space-y-2">
                           <div className="flex justify-between text-sm">
-                            <span>진행률</span>
-                            <span>{Math.round(progressPercentage)}% (최고월대비)</span>
+                            <span>進行率</span>
+                            <span>{Math.round(progressPercentage)}% (最高月対比)</span>
                           </div>
                           <Progress value={progressPercentage} className="h-2" />
                         </div>
-                        
+
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-3 text-sm">
                           <div>
-                            <div className="text-muted-foreground">출근일수</div>
-                            <div className="font-medium">{monthData.total_days}일</div>
+                            <div className="text-muted-foreground">出勤日数</div>
+                            <div className="font-medium">{monthData.total_days}日</div>
                           </div>
                           <div>
-                            <div className="text-muted-foreground">평균일간시간</div>
+                            <div className="text-muted-foreground">平均日間時間</div>
                             <div className="font-medium">{monthData.average_daily_hours}시간</div>
                           </div>
                           <div>
-                            <div className="text-muted-foreground">총노동시간</div>
+                            <div className="text-muted-foreground">総労働時間</div>
                             <div className="font-medium">{monthData.total_hours}시간</div>
                           </div>
                           <div>
-                            <div className="text-muted-foreground">월급여</div>
+                            <div className="text-muted-foreground">月給与</div>
                             <div className="font-medium">¥{monthAmount.toLocaleString()}</div>
                           </div>
                         </div>
@@ -288,12 +288,12 @@ export function YearlySummary({ userId = 1 }: YearlySummaryProps) {
             </CardContent>
           </Card>
 
-          {/* 년간실적요약 */}
+          {/* 年間実績要約 */}
           <Card>
             <CardHeader>
-              <CardTitle>년간실적요약</CardTitle>
+              <CardTitle>年間実績要約</CardTitle>
               <CardDescription>
-                {selectedYear}년의종합평가
+                {selectedYear}年の総合評価
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -302,29 +302,29 @@ export function YearlySummary({ userId = 1 }: YearlySummaryProps) {
                   <div className="text-3xl font-bold text-primary mb-2">
                     {yearlyReport.total_days}
                   </div>
-                  <div className="text-sm text-muted-foreground">총출근일수</div>
+                  <div className="text-sm text-muted-foreground">総出勤日数</div>
                   <div className="text-xs text-muted-foreground mt-1">
-                    1년간의노동일수
+                    1年間の労働日数
                   </div>
                 </div>
-                
+
                 <div className="text-center">
                   <div className="text-3xl font-bold text-green-600 mb-2">
                     {yearlyReport.total_hours}
                   </div>
-                  <div className="text-sm text-muted-foreground">총노동시간</div>
+                  <div className="text-sm text-muted-foreground">総労働時間</div>
                   <div className="text-xs text-muted-foreground mt-1">
-                    평균 {calculateAverageMonthlyHours()}시간/월
+                    平均 {calculateAverageMonthlyHours()}時間/月
                   </div>
                 </div>
-                
+
                 <div className="text-center">
                   <div className="text-3xl font-bold text-blue-600 mb-2">
-                    ¥{Math.round(Number(yearlyReport.total_amount) / 10000)}만
+                    ¥{Math.round(Number(yearlyReport.total_amount) / 10000)}万
                   </div>
-                  <div className="text-sm text-muted-foreground">년간총수입</div>
+                  <div className="text-sm text-muted-foreground">年間総収入</div>
                   <div className="text-xs text-muted-foreground mt-1">
-                    월평균 ¥{Math.round(Number(yearlyReport.total_amount) / 12).toLocaleString()}
+                    月平均 ¥{Math.round(Number(yearlyReport.total_amount) / 12).toLocaleString()}
                   </div>
                 </div>
               </div>

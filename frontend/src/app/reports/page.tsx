@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
+import { Layout } from '@/components/layout/Layout'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { BarChart3Icon, CalendarIcon, TrendingUpIcon } from 'lucide-react'
@@ -40,14 +41,15 @@ export default function ReportsPage() {
   })
 
   return (
-    <div className="container mx-auto px-4 py-8 space-y-8">
-      {/* ページヘッダー */}
-      <div className="space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight">レポート</h1>
-        <p className="text-muted-foreground">
-          勤怠実績の詳細分析と統計情報をご確認いただけます
-        </p>
-      </div>
+    <Layout>
+      <div className="space-y-6">
+        {/* ページヘッダー */}
+        <div>
+          <h1 className="text-3xl font-semibold tracking-tight">レポート</h1>
+          <p className="text-muted-foreground mt-2">
+            勤怠実績の詳細分析と統計情報をご確認いただけます
+          </p>
+        </div>
 
       {/* 概要カード */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -182,6 +184,7 @@ export default function ReportsPage() {
           </p>
         </CardContent>
       </Card>
-    </div>
+      </div>
+    </Layout>
   )
 }
